@@ -3,6 +3,7 @@ package web
 import (
 "github.com/TecharoHQ/anubis"
 "github.com/TecharoHQ/anubis/xess"
+	"os"
 )
 
 templ base(title string, body templ.Component, ogTags map[string]string) {
@@ -42,14 +43,14 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
             border-radius: 1rem;
             overflow: hidden;
             margin: 1rem 0 2rem;
-            outline-color: #b16286;
+            outline-color: #cf2e2e;
             outline-offset: 2px;
             outline-style: solid;
             outline-width: 4px;
         }
 
         .bar-inner {
-            background-color: #b16286;
+            background-color: #cf2e2e;
             height: 100%;
             width: 0;
             transition: width 0.25s ease-in;
@@ -62,6 +63,7 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
 <main>
     <center>
         <h1 id="title" class=".centered-div">{ title }</h1>
+        <h2 id="title" class=".centered-div">Service Managed by {{ company := os.Getenv("COMPANY")}} {company}</h2>
     </center>
     @body
     <footer>
@@ -71,7 +73,7 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
                         href="https://techaro.lol"
                 >Techaro</a>. Made with ❤️ in 🇨🇦.
             </p>
-            <p>Mascot design by <a href="https://bsky.app/profile/celphase.bsky.social">CELPHASE</a>.</p>
+           <!-- <p>Mascot design by <a href="https://bsky.app/profile/celphase.bsky.social">CELPHASE</a>.</p> -->
         </center>
     </footer>
 </main>
@@ -80,17 +82,18 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
 }
 
 templ index() {
+    {{ company := os.Getenv("COMPANY")}}
 <div class="centered-div">
     <img
             id="image"
             style="width:100%;max-width:256px;"
-            src={ "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" +
+            src={ "/.within.website/x/cmd/anubis/static/img/" + company + "_pensive.webp?cacheBuster=" +
     anubis.Version }
     />
     <img
             style="display:none;"
             style="width:100%;max-width:256px;"
-            src={ "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" +
+            src={ "/.within.website/x/cmd/anubis/static/img/" + company + "_happy.webp?cacheBuster=" +
     anubis.Version }
     />
     <p id="status">Loading...</p>
@@ -130,12 +133,13 @@ templ index() {
 }
 
 templ errorPage(message string, mail string) {
+    {{ company := os.Getenv("COMPANY")}}
 <div class="centered-div">
     <img
             id="image"
             alt="Sad Anubis"
             style="width:100%;max-width:256px;"
-            src={ "/.within.website/x/cmd/anubis/static/img/reject.webp?cacheBuster=" + anubis.Version }
+            src={ "/.within.website/x/cmd/anubis/static/img/" + company + "_reject.webp?cacheBuster=" + anubis.Version }
     />
     <p>{ message }.</p>
     <button onClick="window.location.reload();">Try again</button>
@@ -171,7 +175,7 @@ templ bench() {
         <img
                 id="image"
                 style="width:100%;max-width:256px;"
-                src={ "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" +
+                src={ "/.within.website/x/cmd/anubis/static/img/uvensys.webp?cacheBuster=" +
         anubis.Version }
         />
         <p id="status" style="max-width:256px">Loading...</p>
