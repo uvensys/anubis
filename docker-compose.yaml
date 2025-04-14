@@ -1,0 +1,23 @@
+services:
+  anubis-nginx:
+    image: ko.local/anubis:latest
+    environment:
+      BIND: ":8923"
+      DIFFICULTY: "5"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      TARGET: "http://localhost:3000"
+      POLICY_FNAME: "/data/cfg/botPolicy.json"
+      OG_PASSTHROUGH: "true"
+      OG_EXPIRY_TIME: "24h"
+      COMPANY: "uvensys"
+    ports:
+      - 8923:8923
+    volumes:
+      - "./botPolicy.json:/data/cfg/botPolicy.json:ro"
+  nginx:
+    image: nginx
+    ports:
+      - 3000:80
+    volumes:
+      - "./www:/usr/share/nginx/html"
