@@ -1,10 +1,12 @@
 package web
 
 import (
-"github.com/TecharoHQ/anubis"
-"github.com/TecharoHQ/anubis/xess"
+    "github.com/TecharoHQ/anubis"
+    "github.com/TecharoHQ/anubis/xess"
 	"os"
-)
+    )
+
+var company string = os.Getenv("COMPANY");
 
 templ base(title string, body templ.Component, ogTags map[string]string) {
 <!DOCTYPE html>
@@ -63,11 +65,14 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
 <main>
     <center>
         <h1 id="title" class=".centered-div">{ title }</h1>
-        <h2 id="title" class=".centered-div">Service Managed by {{ company := os.Getenv("COMPANY")}} {company}</h2>
+        <h2 id="title" class=".centered-div">Service Managed by { company }</h2>
     </center>
     @body
     <footer>
         <center>
+            <div>
+                @Custom()
+            </div>
             <p>
                 Protected by <a href="https://github.com/TecharoHQ/anubis">Anubis</a> from <a
                         href="https://techaro.lol"
@@ -82,7 +87,6 @@ templ base(title string, body templ.Component, ogTags map[string]string) {
 }
 
 templ index() {
-    {{ company := os.Getenv("COMPANY")}}
 <div class="centered-div">
     <img
             id="image"
@@ -133,7 +137,6 @@ templ index() {
 }
 
 templ errorPage(message string, mail string) {
-    {{ company := os.Getenv("COMPANY")}}
 <div class="centered-div">
     <img
             id="image"
@@ -175,7 +178,7 @@ templ bench() {
         <img
                 id="image"
                 style="width:100%;max-width:256px;"
-                src={ "/.within.website/x/cmd/anubis/static/img/uvensys.webp?cacheBuster=" +
+                src={ "/.within.website/x/cmd/anubis/static/img/"+ company +"_pensive.webp?cacheBuster=" +
         anubis.Version }
         />
         <p id="status" style="max-width:256px">Loading...</p>
