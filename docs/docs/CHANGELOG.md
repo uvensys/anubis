@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added the ability to [customize Anubis' HTTP status codes](./admin/configuration/custom-status-codes.mdx) ([#355](https://github.com/TecharoHQ/anubis/issues/355))
+
 ## v1.17.0: Asahi sas Brutus
 
 - Ensure regexes can't end in newlines ([#372](https://github.com/TecharoHQ/anubis/issues/372))
