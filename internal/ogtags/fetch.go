@@ -1,6 +1,7 @@
 package ogtags
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"golang.org/x/net/html"
@@ -16,17 +17,35 @@ var (
 	emptyMap     = map[string]string{}             // used to indicate an empty result in the cache. Can't use nil as it would be a cache miss.
 )
 
-func (c *OGTagCache) fetchHTMLDocument(urlStr string) (*html.Node, error) {
-	resp, err := c.client.Get(urlStr)
+// fetchHTMLDocumentWithCache fetches the HTML document from the given URL string,
+// preserving the original host header.
+func (c *OGTagCache) fetchHTMLDocumentWithCache(urlStr string, originalHost string, cacheKey string) (*html.Node, error) {
+	req, err := http.NewRequestWithContext(context.Background(), "GET", urlStr, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create http request: %w", err)
+	}
+
+	// Set the Host header to the original host
+	if originalHost != "" {
+		req.Host = originalHost
+	}
+
+	// Add proxy headers
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.Header.Set("User-Agent", "Anubis-OGTag-Fetcher/1.0") // For tracking purposes
+
+	// Send the request
+	resp, err := c.client.Do(req)
 	if err != nil {
 		var netErr net.Error
 		if errors.As(err, &netErr) && netErr.Timeout() {
 			slog.Debug("og: request timed out", "url", urlStr)
-			c.cache.Set(urlStr, emptyMap, c.ogTimeToLive/2) // Cache empty result for half the TTL to not spam the server
+			c.cache.Set(cacheKey, emptyMap, c.ogTimeToLive/2) // Cache empty result for half the TTL to not spam the server
 		}
 		return nil, fmt.Errorf("http get failed: %w", err)
 	}
-	// this defer will call MaxBytesReader's Close, which closes the original body.
+
+	// Ensure the response body is closed
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -36,19 +55,17 @@ func (c *OGTagCache) fetchHTMLDocument(urlStr string) (*html.Node, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		slog.Debug("og: received non-OK status code", "url", urlStr, "status", resp.StatusCode)
-		c.cache.Set(urlStr, emptyMap, c.ogTimeToLive) // Cache empty result for non-successful status codes
+		c.cache.Set(cacheKey, emptyMap, c.ogTimeToLive) // Cache empty result for non-successful status codes
 		return nil, fmt.Errorf("%w: page not found", ErrOgHandled)
 	}
 
 	// Check content type
 	ct := resp.Header.Get("Content-Type")
 	if ct == "" {
-		// assume non html body
 		return nil, fmt.Errorf("missing Content-Type header")
 	} else {
 		mediaType, _, err := mime.ParseMediaType(ct)
 		if err != nil {
-			// Malformed Content-Type header
 			slog.Debug("og: malformed Content-Type header", "url", urlStr, "contentType", ct)
 			return nil, fmt.Errorf("%w malformed Content-Type header: %w", ErrOgHandled, err)
 		}
@@ -59,17 +76,16 @@ func (c *OGTagCache) fetchHTMLDocument(urlStr string) (*html.Node, error) {
 		}
 	}
 
-	resp.Body = http.MaxBytesReader(nil, resp.Body, c.maxContentLength)
+	resp.Body = http.MaxBytesReader(nil, resp.Body, maxContentLength)
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		// Check if the error is specifically because the limit was exceeded
 		var maxBytesErr *http.MaxBytesError
 		if errors.As(err, &maxBytesErr) {
-			slog.Debug("og: content exceeded max length", "url", urlStr, "limit", c.maxContentLength)
-			return nil, fmt.Errorf("content too large: exceeded %d bytes", c.maxContentLength)
+			slog.Debug("og: content exceeded max length", "url", urlStr, "limit", maxContentLength)
+			return nil, fmt.Errorf("content too large: exceeded %d bytes", maxContentLength)
 		}
-		// parsing error (e.g., malformed HTML)
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 

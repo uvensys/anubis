@@ -33,9 +33,10 @@ type Options struct {
 	CookieName        string
 	CookiePartitioned bool
 
-	OGPassthrough bool
-	OGTimeToLive  time.Duration
-	Target        string
+	OGPassthrough        bool
+	OGTimeToLive         time.Duration
+	OGCacheConsidersHost bool
+	Target               string
 
 	WebmasterEmail string
 	BasePrefix     string
@@ -89,7 +90,7 @@ func New(opts Options) (*Server, error) {
 		policy:     opts.Policy,
 		opts:       opts,
 		DNSBLCache: decaymap.New[string, dnsbl.DroneBLResponse](),
-		OGTags:     ogtags.NewOGTagCache(opts.Target, opts.OGPassthrough, opts.OGTimeToLive),
+		OGTags:     ogtags.NewOGTagCache(opts.Target, opts.OGPassthrough, opts.OGTimeToLive, opts.OGCacheConsidersHost),
 	}
 
 	mux := http.NewServeMux()

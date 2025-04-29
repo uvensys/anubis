@@ -2,6 +2,7 @@ package ogtags
 
 import (
 	"fmt"
+	"golang.org/x/net/html"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -78,8 +79,8 @@ func TestFetchHTMLDocument(t *testing.T) {
 			}))
 			defer ts.Close()
 
-			cache := NewOGTagCache("", true, time.Minute)
-			doc, err := cache.fetchHTMLDocument(ts.URL)
+			cache := NewOGTagCache("", true, time.Minute, false)
+			doc, err := cache.fetchHTMLDocument(ts.URL, "anything")
 
 			if tt.expectError {
 				if err == nil {
@@ -105,9 +106,9 @@ func TestFetchHTMLDocumentInvalidURL(t *testing.T) {
 		t.Skip("test requires theoretical network egress")
 	}
 
-	cache := NewOGTagCache("", true, time.Minute)
+	cache := NewOGTagCache("", true, time.Minute, false)
 
-	doc, err := cache.fetchHTMLDocument("http://invalid.url.that.doesnt.exist.example")
+	doc, err := cache.fetchHTMLDocument("http://invalid.url.that.doesnt.exist.example", "anything")
 
 	if err == nil {
 		t.Error("expected error for invalid URL, got nil")
@@ -116,4 +117,10 @@ func TestFetchHTMLDocumentInvalidURL(t *testing.T) {
 	if doc != nil {
 		t.Error("expected nil document for invalid URL, got non-nil")
 	}
+}
+
+// fetchHTMLDocument allows you to call fetchHTMLDocumentWithCache without a duplicate generateCacheKey call
+func (c *OGTagCache) fetchHTMLDocument(urlStr string, originalHost string) (*html.Node, error) {
+	cacheKey := c.generateCacheKey(urlStr, originalHost)
+	return c.fetchHTMLDocumentWithCache(urlStr, originalHost, cacheKey)
 }
