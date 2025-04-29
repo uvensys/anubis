@@ -32,9 +32,12 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - https://codeberg.org/
 - <details>
   <summary>Sourceware</summary>
+  - https://sourceware.org/cgit
   - https://sourceware.org/glibc/wiki
   - https://builder.sourceware.org/testruns/
   - https://patchwork.sourceware.org/
+  - https://gcc.gnu.org/bugzilla/
+  - https://gcc.gnu.org/cgit
   </details>
 - <details>
   <summary>The United Nations</summary>
