@@ -11,17 +11,24 @@ $`npm run assets`;
         documentation: {
             "./README.md": "README.md",
             "./LICENSE": "LICENSE",
-            "./docs/docs/CHANGELOG.md": "CHANGELOG.md",
-            "./docs/docs/admin/policies.mdx": "policies.md",
-            "./docs/docs/admin/native-install.mdx": "native-install.mdx",
             "./data/botPolicies.json": "botPolicies.json",
+            "./data/botPolicies.yaml": "botPolicies.yaml",
         },
 
-        build: ({ bin, etc, systemd, out }) => {
+        build: ({ bin, etc, systemd, doc }) => {
             $`go build -o ${bin}/anubis -ldflags '-s -w -extldflags "-static" -X "github.com/TecharoHQ/anubis.Version=${git.tag()}"' ./cmd/anubis`;
 
             file.install("./run/anubis@.service", `${systemd}/anubis@.service`);
             file.install("./run/default.env", `${etc}/default.env`);
+
+            $`mkdir -p ${doc}/docs`
+            $`cp -a docs/docs ${doc}`;
+            $`find ${doc} -name _category_.json -delete`;
+            $`mkdir -p ${doc}/data`;
+            $`cp -a data/apps ${doc}/data/apps`;
+            $`cp -a data/bots ${doc}/data/bots`;
+            $`cp -a data/common ${doc}/data/common`;
+            $`cp -a data/crawlers ${doc}/data/crawlers`;
         },
     }));
 });

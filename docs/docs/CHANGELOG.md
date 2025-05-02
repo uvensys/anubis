@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fixed native packages not containing the stdlib and botPolicies.yaml
+
 ## v1.17.1: Asahi sas Brutus: Echo 1
 
 - Added customization of authorization cookie expiration time with `--cookie-expiration-time` flag or envvar
