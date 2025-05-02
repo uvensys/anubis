@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Use CSS variables to deduplicate styles 
 
 - Fixed native packages not containing the stdlib and botPolicies.yaml
 - Change import syntax to allow multi-level imports
