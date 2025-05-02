@@ -79,6 +79,45 @@ config.BotOrImport: rule definition is invalid, you must set either bot rules or
 
 Paths can either be prefixed with `(data)` to import from the [the data folder in the Anubis source tree](https://github.com/TecharoHQ/anubis/tree/main/data) or anywhere on the filesystem. If you don't have access to the Anubis source tree, check /usr/share/docs/anubis/data or in the tarball you extracted Anubis from.
 
+## Importing from imports
+
+You can also import from an imported file in case you want to import an entire folder of rules at once.
+
+<Tabs>
+<TabItem value="json" label="JSON">
+
+```json
+{
+  "bots": [
+    {
+      "import": "(data)/bots/_deny-pathological.yaml"
+    }
+  ]
+}
+```
+
+</TabItem>
+<TabItem value="yaml" label="YAML" default>
+
+```yaml
+bots:
+  - import: (data)/bots/_deny-pathological.yaml
+```
+
+</TabItem>
+</Tabs>
+
+This lets you import an entire ruleset at once:
+
+```yaml
+# (data)/bots/_deny-pathological.yaml
+- import: (data)/bots/cloudflare-workers.yaml
+- import: (data)/bots/headless-browsers.yaml
+- import: (data)/bots/us-ai-scraper.yaml
+```
+
+Use this with care, you can easily get yourself into a state where Anubis recursively imports things for eternity if you are not careful. The best way to use this is to make a "root import" named `_everything.yaml` or `_allow-good.yaml` so they sort to the top. Name your meta-imports after the main verb they are enforcing so that you can glance at the configuration file and understand what it's doing.
+
 ## Writing snippets
 
 Snippets can be written in either JSON or YAML, with a preference for YAML. When writing a snippet, write the bot rules you want directly at the top level of the file in a list.

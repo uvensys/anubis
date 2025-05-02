@@ -216,17 +216,26 @@ func (is *ImportStatement) load() error {
 	}
 	defer fin.Close()
 
+	var imported []BotOrImport
 	var result []BotConfig
 
-	if err := yaml.NewYAMLToJSONDecoder(fin).Decode(&result); err != nil {
+	if err := yaml.NewYAMLToJSONDecoder(fin).Decode(&imported); err != nil {
 		return fmt.Errorf("can't parse %s: %w", is.Import, err)
 	}
 
 	var errs []error
 
-	for _, b := range result {
+	for _, b := range imported {
 		if err := b.Valid(); err != nil {
 			errs = append(errs, err)
+		}
+
+		if b.ImportStatement != nil {
+			result = append(result, b.ImportStatement.Bots...)
+		}
+
+		if b.BotConfig != nil {
+			result = append(result, *b.BotConfig)
 		}
 	}
 
