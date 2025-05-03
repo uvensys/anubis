@@ -27,6 +27,7 @@ $`npm run assets`;
             $`mkdir -p ${doc}/data`;
             $`cp -a data/apps ${doc}/data/apps`;
             $`cp -a data/bots ${doc}/data/bots`;
+            $`cp -a data/clients ${doc}/data/clients`;
             $`cp -a data/common ${doc}/data/common`;
             $`cp -a data/crawlers ${doc}/data/crawlers`;
         },

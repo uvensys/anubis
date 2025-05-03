@@ -55,9 +55,11 @@ type BotConfig struct {
 	UserAgentRegex *string           `json:"user_agent_regex"`
 	PathRegex      *string           `json:"path_regex"`
 	HeadersRegex   map[string]string `json:"headers_regex"`
-	Action         Rule              `json:"action"`
 	RemoteAddr     []string          `json:"remote_addresses"`
-	Challenge      *ChallengeRules   `json:"challenge,omitempty"`
+	Expression     *ExpressionOrList `json:"expression"`
+
+	Action    Rule            `json:"action"`
+	Challenge *ChallengeRules `json:"challenge,omitempty"`
 }
 
 func (b BotConfig) Zero() bool {
@@ -85,7 +87,12 @@ func (b BotConfig) Valid() error {
 		errs = append(errs, ErrBotMustHaveName)
 	}
 
-	if b.UserAgentRegex == nil && b.PathRegex == nil && len(b.RemoteAddr) == 0 && len(b.HeadersRegex) == 0 {
+	allFieldsEmpty := b.UserAgentRegex == nil &&
+		b.PathRegex == nil &&
+		len(b.RemoteAddr) == 0 &&
+		len(b.HeadersRegex) == 0
+
+	if allFieldsEmpty && b.Expression == nil {
 		errs = append(errs, ErrBotMustHaveUserAgentOrPath)
 	}
 
@@ -134,6 +141,12 @@ func (b BotConfig) Valid() error {
 			if _, _, err := net.ParseCIDR(cidr); err != nil {
 				errs = append(errs, ErrInvalidCIDR, err)
 			}
+		}
+	}
+
+	if b.Expression != nil {
+		if err := b.Expression.Valid(); err != nil {
+			errs = append(errs, err)
 		}
 	}
 

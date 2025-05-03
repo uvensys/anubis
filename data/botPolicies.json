@@ -10,6 +10,9 @@
       "import": "(data)/crawlers/_allow-good.yaml"
     },
     {
+      "import": "(data)/bots/aggressive-brazilian-scrapers.yaml"
+    },
+    {
       "import": "(data)/common/keep-internet-working.yaml"
     },
     {

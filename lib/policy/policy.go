@@ -94,6 +94,15 @@ func ParseConfig(fin io.Reader, fname string, defaultDifficulty int) (*ParsedCon
 			}
 		}
 
+		if b.Expression != nil {
+			c, err := NewCELChecker(b.Expression)
+			if err != nil {
+				validationErrs = append(validationErrs, fmt.Errorf("while processing rule %s expressions: %w", b.Name, err))
+			} else {
+				cl = append(cl, c)
+			}
+		}
+
 		if b.Challenge == nil {
 			parsedBot.Challenge = &config.ChallengeRules{
 				Difficulty: defaultDifficulty,
