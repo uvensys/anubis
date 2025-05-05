@@ -28,6 +28,11 @@ const dependencies = [
     msg: "Your browser doesn't support web workers (Anubis uses this to avoid freezing your browser). Do you have a plugin like JShelter installed?",
     value: window.Worker,
   },
+  {
+    name: "Cookies",
+    msg: "Your browser doesn't store cookies. Anubis uses cookies to determine which clients have passed challenges by storing a signed token in a cookie. Please enable storing cookies for this domain. The names of the cookies Anubis stores may vary without notice. Cookie names and values are not part of the public API.",
+    value: navigator.cookieEnabled,
+  },
 ];
 
 function showContinueBar(hash, nonce, t0, t1) {
@@ -131,6 +136,7 @@ function showContinueBar(hash, nonce, t0, t1) {
         statusMsg: msg,
         imageSrc: imageURL("reject", anubisVersion, basePrefix),
       });
+      return;
     }
   }
 
