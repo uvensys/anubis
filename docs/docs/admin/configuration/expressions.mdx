@@ -18,7 +18,7 @@ This is an advanced feature and as such it is easy to get yourself in trouble wi
 
 ## Common Expression Language (CEL)
 
-CEL is an expression language made by Google as a part of their access control lists system. As programs grow more complicated and users have the need to express more complicated security requirements, they often want the ability to just run a small bit of code to check things for themselves. CEL expressions are built for this. They are implictly sandboxed so that they cannot affect the system they are running in and also designed to evaluate as fast as humanly possible.
+CEL is an expression language made by Google as a part of their access control lists system. As programs grow more complicated and users have the need to express more complicated security requirements, they often want the ability to just run a small bit of code to check things for themselves. CEL expressions are built for this. They are implicitly sandboxed so that they cannot affect the system they are running in and also designed to evaluate as fast as humanly possible.
 
 Imagine a CEL expression as the contents of an `if` statement in JavaScript or the `WHERE` clause in SQL. Consider this example expression:
 
@@ -79,7 +79,7 @@ For this rule, if a request comes in from `8.8.8.8` or `1.1.1.1`, Anubis will de
 
 #### `all` blocks
 
-An `all` block that contains a list of expessions. If all expressions in the list return `true`, then the action specified in the rule will be taken. If any of the expressions in the list returns `false`, Anubis will move on to the next rule.
+An `all` block that contains a list of expressions. If all expressions in the list return `true`, then the action specified in the rule will be taken. If any of the expressions in the list returns `false`, Anubis will move on to the next rule.
 
 For example, consider this rule:
 

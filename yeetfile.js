@@ -37,7 +37,7 @@ $`npm run assets`;
 // NOTE(Xe): Fixes #217. This is a "half baked" tarball that includes the harder
 // parts for deterministic distros already done. Distributions like NixOS, Gentoo
 // and *BSD ports have a difficult time fitting the square peg of their dependency
-// model into the bazarr of round holes that various modern languages use. Needless
+// model into the bazaar of round holes that various modern languages use. Needless
 // to say, this makes adoption easier.
 tarball.build({
     name: "anubis-src-vendor",
