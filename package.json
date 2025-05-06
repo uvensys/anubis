@@ -10,7 +10,8 @@
     "build": "npm run assets && go build -o ./var/anubis ./cmd/anubis",
     "dev": "npm run assets && go run ./cmd/anubis --use-remote-address",
     "container": "npm run assets && go run ./cmd/containerbuild",
-    "package": "yeet"
+    "package": "yeet",
+    "lint": "make lint"
   },
   "author": "",
   "license": "ISC",
