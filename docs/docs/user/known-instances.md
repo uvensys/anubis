@@ -14,7 +14,6 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - https://bugs.winehq.org/
 - https://svnweb.freebsd.org/
 - https://trac.ffmpeg.org/
-- https://git.sr.ht/
 - https://xeiaso.net/
 - https://source.puri.sm/
 - https://git.enlightenment.org/
@@ -31,6 +30,7 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - https://hydra.nixos.org/
 - https://codeberg.org/
 - https://www.cfaarchive.org/
+- https://gitlab.freedesktop.org/
 - <details>
   <summary>FreeCAD</summary>
   - https://forum.freecad.org/
