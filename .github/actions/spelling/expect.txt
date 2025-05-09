@@ -134,8 +134,10 @@ pag
 parseable
 passthrough
 Patreon
+pgrep
 phrik
 pidfile
+pids
 pipefail
 pki
 podkova
@@ -167,6 +169,8 @@ Spambot
 sparkline
 srv
 stackoverflow
+startprecmd
+stoppostcmd
 subgrid
 subr
 subrequest
@@ -182,6 +186,7 @@ traefik
 unixhttpd
 unmarshal
 uvx
+Varis
 vendored
 vhosts
 videotest
@@ -190,7 +195,7 @@ webmaster
 webpage
 websecure
 websites
-Workaround
+workaround
 xcaddy
 Xeact
 xeiaso
@@ -208,3 +213,4 @@ yourdomain
 yoursite
 Zenos
 zizmor
+zos
