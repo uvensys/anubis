@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `check-spelling` for spell checking
 - Add `--target-insecure-skip-verify` flag/envvar to allow Anubis to hit a self-signed HTTPS backend.
+- Minor adjustments to FreeBSD rc.d script to allow for more flexible configuration.
 
 ## v1.18.0: Varis zos Galvus
 
