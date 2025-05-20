@@ -7,6 +7,7 @@ import (
 )
 
 templ base(title string, body templ.Component, challenge any, ogTags map[string]string) {
+	{{ company_foot := Company() }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -69,6 +70,8 @@ templ base(title string, body templ.Component, challenge any, ogTags map[string]
 					<h2 id="title" class=".centered-div">Service Managed by {{ company := os.Getenv("COMPANY")}} {company}</h2>
 				</center>
 				@body
+				
+				@company_foot
 				<footer>
 					<center>
 						<p>
@@ -215,4 +218,15 @@ templ bench() {
 			</select>
 		</div>
 	</form>
+}
+
+templ company() {
+	<dir>
+		<p>
+			This is a test message for the company specific footer.
+		</p>
+		<p>
+			Mehr Zeiligen test damit man auch den unterschied sieht.
+		</p>
+	</dir>
 }
