@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/TecharoHQ/anubis"
 	"github.com/TecharoHQ/anubis/xess"
+	"os"
 )
 
 templ base(title string, body templ.Component, challenge any, ogTags map[string]string) {
@@ -65,6 +66,7 @@ templ base(title string, body templ.Component, challenge any, ogTags map[string]
 			<main>
 				<center>
 					<h1 id="title" class=".centered-div">{ title }</h1>
+					<h2 id="title" class=".centered-div">Service Managed by {{ company := os.Getenv("COMPANY")}} {company}</h2>
 				</center>
 				@body
 				<footer>
