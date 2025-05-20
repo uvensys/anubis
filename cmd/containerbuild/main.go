@@ -127,7 +127,7 @@ func parseImageList(imageList string) ([]image, error) {
 		index := strings.LastIndex(img, ":")
 		result = append(result, image{
 			repository: img[:index],
-			tag:        img[index:],
+			tag:        img[index+1:],
 		})
 	}
 
