@@ -1,0 +1,24 @@
+services:
+  anubis-nginx:
+    image: ko.local/anubis:74c8e292f442a0a30fbeb85cd83786b26fc9bdb2fd97496f12ebe51b300acbb4
+    environment:
+      BIND: ":8080"
+      DIFFICULTY: "5"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      TARGET: "http://nginx"
+      #POLICY_FNAME: "/data/cfg/botPolicy.yaml"
+      OG_PASSTHROUGH: "false"
+      OG_EXPIRY_TIME: "5s"
+      COMPANY: "uvensys"
+      USE_REMOTE_ADDRESS: "true"
+    ports:
+      - 8080:8080
+    #volumes:
+      #- "./data/botPolicy.yaml:/data/cfg/botPolicy.yaml:ro"
+  nginx:
+    image: nginx
+    ports:
+      - 80:80
+    #volumes:
+    #  - "./www:/usr/share/nginx/html"
