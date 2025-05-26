@@ -1,6 +1,6 @@
 services:
   anubis-nginx:
-    image: ko.local/anubis:74c8e292f442a0a30fbeb85cd83786b26fc9bdb2fd97496f12ebe51b300acbb4
+    image: ko.local/uvensys/anubis:latest
     environment:
       BIND: ":8080"
       DIFFICULTY: "5"
@@ -10,15 +10,17 @@ services:
       #POLICY_FNAME: "/data/cfg/botPolicy.yaml"
       OG_PASSTHROUGH: "false"
       OG_EXPIRY_TIME: "5s"
-      COMPANY: "uvensys"
-      USE_REMOTE_ADDRESS: "true"
+      COMPANY: "uvensys"  # to select company
+      USE_REMOTE_ADDRESS: "true" #for x-real-ip because no proxy is used
     ports:
       - 8080:8080
     #volumes:
       #- "./data/botPolicy.yaml:/data/cfg/botPolicy.yaml:ro"
-  nginx:
+  nginx: #protected service
     image: nginx
     ports:
       - 80:80
     #volumes:
     #  - "./www:/usr/share/nginx/html"
+
+#DOCKER_REPO=ko.local/uvensys/anubis DOCKER_METADATA_OUTPUT_TAGS=ko.local/uvensys/anubis:latest npm run container
