@@ -227,7 +227,7 @@ templ company() {
       cursor: pointer;
       font-weight: bold;
       margin-top: 20px;
-    }
+    }	
     .main-content {
       margin: 30px auto;
       max-width: 800px;
@@ -243,12 +243,13 @@ templ company() {
     }
 
     .info-box {
-      background: #666666;
+      background: #eeeae4;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       padding: 20px;
-      width: 200px;
+      width: 180px;
       text-align: center;
+	  color: #564e3c;
     }
 
     .info-box ul {
@@ -260,36 +261,64 @@ templ company() {
       margin-bottom: 10px;
 	  text-align: left;
     }
-
+	
+	
+	
     .social-media {
-  display: grid;
-  grid-template-columns: repeat(2, 60px); /* 2 columns of 60px */
-  grid-template-rows: repeat(2, 60px);    /* 2 rows of 60px */
-  gap: 15px;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-}
+  	  display: grid;
+  	  grid-template-columns: repeat(2, 60px); /* 2 columns of 60px */
+  	  grid-template-rows: repeat(2, 60px);    /* 2 rows of 60px */
+  	  gap: 15px;
+  	  justify-content: center;
+  	  align-items: center;
+  	  margin-top: 10px;
+	}
 
-.social-media a.fa {
-  width: 60px;
-  height: 60px;
-  line-height: 60px; /* vertically center the icon */
-  font-size: 28px;
-  background-color: #aaaaaa;
-  color: white;
-  text-align: center;
-  border-radius: 50%;
-  display: inline-block;
-  transition: opacity 0.3s;
-}
+	.social-media a.fa {
+	  width: 60px;
+	  height: 60px;
+	  line-height: 60px; /* vertically center the icon */
+	  font-size: 28px;
+	  background-color: #aaaaaa;
+	  color: white;
+	  text-align: center;1
+	  border-radius: 50%;
+	  display: inline-block;
+	  transition: opacity 0.3s;
+	}
 
-.social-media a.fa:hover {
-  opacity: 0.7;
-}
+	.social-media a.fa:hover {
+	  opacity: 0.7;
+	}
+
+	.div-border {
+		border: 2px solid #333; /* thickness, style, color */
+  		padding: 20px;          /* space inside the border */
+  		margin: 20px;           /* space outside the border */
+  		border-radius: 8px;     /* optional: rounded corners */
+		background-color: #ffffff;
+		color: #a42622;
+	}
+	.uvensys a {
+		background: #ffffff;
+		color: #a42622;
+	}
+	.uvensys a:hover {
+		color: #2c5e6a;
+	}
+	.uvensys p {
+		color: #898376;
+	}
+	.info-box a{
+		background: #eeeae4;
+		color: #a42622;
+	}
+	.info-box a:hover{
+		color: #2c5e6a;
+	}
   </style>
 
-<div class="centered-div"> 
+<div class="centered-div div-border uvensys"> 
   <details>
 	<summary>Warum sehe ich das?</summary>
 	<p>
@@ -319,7 +348,7 @@ templ company() {
 	</p>
 </details>
 
-  <div class="main-content">
+  <div class="main-content ">
     <h1>Ihr Partner für den IT-Betrieb</h1>
     <h2>Ihre IT in guten Händen</h2>
     <p>uvensys wurde 2012 gegründet. Die Idee damals wie heute ist es Unternehmen,
@@ -348,7 +377,7 @@ templ company() {
         <a href="https://www.facebook.com/UvensysGmbh" class="fa fa-facebook"></a>
         <a href="https://www.xing.com/pages/uvensysgmbh" class="fa fa-xing"></a>
         <a href="https://www.linkedin.com/company/uvensys-gmbh" class="fa fa-linkedin"></a>
-        <a href="https://twitter.com/uvensys" class="fa fa-x-twitter"></a>
+        <a href="https://twitter.com/uvensys" class="fa fa-twitter"></a>
       </div>
     </div>
 
@@ -363,5 +392,5 @@ templ company() {
     </div>
   </div>
   </div>
-
+	
 }
