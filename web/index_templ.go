@@ -129,21 +129,25 @@ func base(title string, body templ.Component, challenge any, ogTags map[string]s
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</h1><h2 id=\"title\" class=\".centered-div\">Service Managed by ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</h1><h2 id=\"title\" class=\".centered-div\">Service Managed by  ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		company := os.Getenv("COMPANY")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<strong id=\"company\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(company)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 70, Col: 106}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 72, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</h2></center>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</strong></h2></center>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -155,7 +159,7 @@ func base(title string, body templ.Component, challenge any, ogTags map[string]s
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<footer><center><p>Protected by <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> from <a href=\"https://techaro.lol\">Techaro</a>. Made with ❤️ in 🇨🇦.</p><p>Mascot design by <a href=\"https://bsky.app/profile/celphase.bsky.social\">CELPHASE</a>.</p></center></footer></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<footer><center><p>Protected by <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> from <a href=\"https://techaro.lol\">Techaro</a>. Made with ❤️ in 🇨🇦.</p><p>Mascot design by <a href=\"https://bsky.app/profile/celphase.bsky.social\">CELPHASE</a>.</p></center></footer></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -184,46 +188,47 @@ func index() templ.Component {
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"centered-div\"><img id=\"image\" style=\"width:100%;max-width:256px;\" src=\"")
+		company := os.Getenv("COMPANY")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"centered-div\"><img id=\"image\" style=\"width:100%;max-width:256px;\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version)
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" + company + ".webp?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 92, Col: 165}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 97, Col: 183}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"> <img style=\"display:none;\" style=\"width:100%;max-width:256px;\" src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"> <img style=\"display:none;\" style=\"width:100%;max-width:256px;\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" + anubis.Version)
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy_" + company + ".webp?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 93, Col: 174}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 98, Col: 192}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"><p id=\"status\">Loading...</p><script async type=\"module\" src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><p id=\"status\">Loading...</p><script async type=\"module\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/main.mjs?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 95, Col: 136}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 100, Col: 136}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"></script><div id=\"progress\" role=\"progressbar\" aria-labelledby=\"status\"><div class=\"bar-inner\"></div></div><details><summary>Why am I seeing this?</summary><p>You are seeing this because the administrator of this website has set up <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> to protect the server against the scourge of <a href=\"https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/\">AI companies aggressively scraping websites</a>. This can and does cause downtime for the websites, which makes their resources inaccessible for everyone.</p><p>Anubis is a compromise. Anubis uses a <a href=\"https://anubis.techaro.lol/docs/design/why-proof-of-work\">Proof-of-Work</a> scheme in the vein of <a href=\"https://en.wikipedia.org/wiki/Hashcash\">Hashcash</a>, a proposed proof-of-work scheme for reducing email spam. The idea is that at individual scales the additional load is ignorable, but at mass scraper levels it adds up and makes scraping much more expensive.</p><p>Ultimately, this is a hack whose real purpose is to give a \"good enough\" placeholder solution so that more time can be spent on fingerprinting and identifying headless browsers (EG: via how they do font rendering) so that the challenge proof of work page doesn't need to be presented to users that are much more likely to be legitimate.</p><p>Please note that Anubis requires the use of modern JavaScript features that plugins like <a href=\"https://jshelter.org/\">JShelter</a> will disable. Please disable JShelter or other such plugins for this domain.</p></details><noscript><p>Sadly, you must enable JavaScript to get past this challenge. This is required because AI companies have changed the social contract around how website hosting works. A no-JS solution is a work-in-progress.</p></noscript><div id=\"testarea\"></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"></script><div id=\"progress\" role=\"progressbar\" aria-labelledby=\"status\"><div class=\"bar-inner\"></div></div><details><summary>Why am I seeing this?</summary><p>You are seeing this because the administrator of this website has set up <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> to protect the server against the scourge of <a href=\"https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/\">AI companies aggressively scraping websites</a>. This can and does cause downtime for the websites, which makes their resources inaccessible for everyone.</p><p>Anubis is a compromise. Anubis uses a <a href=\"https://anubis.techaro.lol/docs/design/why-proof-of-work\">Proof-of-Work</a> scheme in the vein of <a href=\"https://en.wikipedia.org/wiki/Hashcash\">Hashcash</a>, a proposed proof-of-work scheme for reducing email spam. The idea is that at individual scales the additional load is ignorable, but at mass scraper levels it adds up and makes scraping much more expensive.</p><p>Ultimately, this is a hack whose real purpose is to give a \"good enough\" placeholder solution so that more time can be spent on fingerprinting and identifying headless browsers (EG: via how they do font rendering) so that the challenge proof of work page doesn't need to be presented to users that are much more likely to be legitimate.</p><p>Please note that Anubis requires the use of modern JavaScript features that plugins like <a href=\"https://jshelter.org/\">JShelter</a> will disable. Please disable JShelter or other such plugins for this domain.</p></details><noscript><p>Sadly, you must enable JavaScript to get past this challenge. This is required because AI companies have changed the social contract around how website hosting works. A no-JS solution is a work-in-progress.</p></noscript><div id=\"testarea\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -252,38 +257,39 @@ func errorPage(message string, mail string) templ.Component {
 			templ_7745c5c3_Var12 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div class=\"centered-div\"><img id=\"image\" alt=\"Sad Anubis\" style=\"width:100%;max-width:256px;\" src=\"")
+		company := os.Getenv("COMPANY")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<div class=\"centered-div\"><img id=\"image\" alt=\"Sad Anubis\" style=\"width:100%;max-width:256px;\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject.webp?cacheBuster=" + anubis.Version)
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject_" + company + ".webp?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 145, Col: 181}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 151, Col: 199}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\"><p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 146, Col: 14}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 152, Col: 14}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, ".</p><button onClick=\"window.location.reload();\">Try again</button> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, ".</p><button onClick=\"window.location.reload();\">Try again</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if mail != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<p><a href=\"/\">Go home</a> or if you believe you should not be blocked, please contact the webmaster at <a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<p><a href=\"/\">Go home</a> or if you believe you should not be blocked, please contact the webmaster at <a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -292,30 +298,30 @@ func errorPage(message string, mail string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(mail)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 152, Col: 11}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 158, Col: 11}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</a></p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</a></p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<p><a href=\"/\">Go home</a></p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<p><a href=\"/\">Go home</a></p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -344,21 +350,22 @@ func StaticHappy() templ.Component {
 			templ_7745c5c3_Var17 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div class=\"centered-div\"><img style=\"display:none;\" style=\"width:100%;max-width:256px;\" src=\"")
+		company := os.Getenv("COMPANY")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<div class=\"centered-div\"><img style=\"display:none;\" style=\"width:100%;max-width:256px;\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var18 string
-		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" +
+		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("/.within.website/x/cmd/anubis/static/img/happy_" + company + ".webp?cacheBuster=" +
 			anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 167, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 174, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\"><p>This is just a check endpoint for your reverse proxy to use.</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\"><p>This is just a check endpoint for your reverse proxy to use.</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -387,33 +394,34 @@ func bench() templ.Component {
 			templ_7745c5c3_Var19 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<div style=\"height:20rem;display:flex\"><table style=\"margin-top:1rem;display:grid;grid-template:auto 1fr/auto auto;gap:0 0.5rem\"><thead style=\"border-bottom:1px solid black;padding:0.25rem 0;display:grid;grid-template:1fr/subgrid;grid-column:1/-1\"><tr id=\"table-header\" style=\"display:contents\"><th style=\"width:4.5rem\">Time</th><th style=\"width:4rem\">Iters</th></tr><tr id=\"table-header-compare\" style=\"display:none\"><th style=\"width:4.5rem\">Time A</th><th style=\"width:4rem\">Iters A</th><th style=\"width:4.5rem\">Time B</th><th style=\"width:4rem\">Iters B</th></tr></thead> <tbody id=\"results\" style=\"padding-top:0.25rem;display:grid;grid-template-columns:subgrid;grid-auto-rows:min-content;grid-column:1/-1;row-gap:0.25rem;overflow-y:auto;font-variant-numeric:tabular-nums\"></tbody></table><div class=\"centered-div\"><img id=\"image\" style=\"width:100%;max-width:256px;\" src=\"")
+		company := os.Getenv("COMPANY")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div style=\"height:20rem;display:flex\"><table style=\"margin-top:1rem;display:grid;grid-template:auto 1fr/auto auto;gap:0 0.5rem\"><thead style=\"border-bottom:1px solid black;padding:0.25rem 0;display:grid;grid-template:1fr/subgrid;grid-column:1/-1\"><tr id=\"table-header\" style=\"display:contents\"><th style=\"width:4.5rem\">Time</th><th style=\"width:4rem\">Iters</th></tr><tr id=\"table-header-compare\" style=\"display:none\"><th style=\"width:4.5rem\">Time A</th><th style=\"width:4rem\">Iters A</th><th style=\"width:4.5rem\">Time B</th><th style=\"width:4rem\">Iters B</th></tr></thead> <tbody id=\"results\" style=\"padding-top:0.25rem;display:grid;grid-template-columns:subgrid;grid-auto-rows:min-content;grid-column:1/-1;row-gap:0.25rem;overflow-y:auto;font-variant-numeric:tabular-nums\"></tbody></table><div class=\"centered-div\"><img id=\"image\" style=\"width:100%;max-width:256px;\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var20 string
-		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version)
+		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" + company + ".webp?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 196, Col: 166}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 204, Col: 184}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\"><p id=\"status\" style=\"max-width:256px\">Loading...</p><script async type=\"module\" src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"><p id=\"status\" style=\"max-width:256px\">Loading...</p><script async type=\"module\" src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/bench.mjs?cacheBuster=" + anubis.Version)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 198, Col: 138}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `index.templ`, Line: 206, Col: 138}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"></script><div id=\"sparkline\"></div><noscript><p>Running the benchmark tool requires JavaScript to be enabled.</p></noscript></div></div><form id=\"controls\" style=\"position:fixed;top:0.5rem;right:0.5rem\"><div style=\"display:flex;justify-content:end\"><label for=\"difficulty-input\" style=\"margin-right:0.5rem\">Difficulty:</label> <input id=\"difficulty-input\" type=\"number\" name=\"difficulty\" style=\"width:3rem\"></div><div style=\"margin-top:0.25rem;display:flex;justify-content:end\"><label for=\"algorithm-select\" style=\"margin-right:0.5rem\">Algorithm:</label> <select id=\"algorithm-select\" name=\"algorithm\"></select></div><div style=\"margin-top:0.25rem;display:flex;justify-content:end\"><label for=\"compare-select\" style=\"margin-right:0.5rem\">Compare:</label> <select id=\"compare-select\" name=\"compare\"><option value=\"NONE\">-</option></select></div></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\"></script><div id=\"sparkline\"></div><noscript><p>Running the benchmark tool requires JavaScript to be enabled.</p></noscript></div></div><form id=\"controls\" style=\"position:fixed;top:0.5rem;right:0.5rem\"><div style=\"display:flex;justify-content:end\"><label for=\"difficulty-input\" style=\"margin-right:0.5rem\">Difficulty:</label> <input id=\"difficulty-input\" type=\"number\" name=\"difficulty\" style=\"width:3rem\"></div><div style=\"margin-top:0.25rem;display:flex;justify-content:end\"><label for=\"algorithm-select\" style=\"margin-right:0.5rem\">Algorithm:</label> <select id=\"algorithm-select\" name=\"algorithm\"></select></div><div style=\"margin-top:0.25rem;display:flex;justify-content:end\"><label for=\"compare-select\" style=\"margin-right:0.5rem\">Compare:</label> <select id=\"compare-select\" name=\"compare\"><option value=\"NONE\">-</option></select></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -442,7 +450,7 @@ func company() templ.Component {
 			templ_7745c5c3_Var22 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><style>\n    summary {\n      cursor: pointer;\n      font-weight: bold;\n      margin-top: 20px;\n    }\t\n    .main-content {\n      margin: 30px auto;\n      max-width: 800px;\n      padding: 0 20px;\n    }\n\n    .info-section {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: center;\n      gap: 20px;\n      margin-top: 10px;\n    }\n\n    .info-box {\n      background: #eeeae4;\n      border-radius: 10px;\n      box-shadow: 0 4px 10px rgba(0,0,0,0.1);\n      padding: 20px;\n      width: 180px;\n      text-align: center;\n\t  color: #564e3c;\n    }\n\n    .info-box ul {\n      list-style: none;\n      padding: 0;\n    }\n\n    .info-box li {\n      margin-bottom: 10px;\n\t  text-align: left;\n    }\n\t\n\t\n\t\n    .social-media {\n  \t  display: grid;\n  \t  grid-template-columns: repeat(2, 60px); /* 2 columns of 60px */\n  \t  grid-template-rows: repeat(2, 60px);    /* 2 rows of 60px */\n  \t  gap: 15px;\n  \t  justify-content: center;\n  \t  align-items: center;\n  \t  margin-top: 10px;\n\t}\n\n\t.social-media a.fa {\n\t  width: 60px;\n\t  height: 60px;\n\t  line-height: 60px; /* vertically center the icon */\n\t  font-size: 28px;\n\t  background-color: #aaaaaa;\n\t  color: white;\n\t  text-align: center;1\n\t  border-radius: 50%;\n\t  display: inline-block;\n\t  transition: opacity 0.3s;\n\t}\n\n\t.social-media a.fa:hover {\n\t  opacity: 0.7;\n\t}\n\n\t.div-border {\n\t\tborder: 2px solid #333; /* thickness, style, color */\n  \t\tpadding: 20px;          /* space inside the border */\n  \t\tmargin: 20px;           /* space outside the border */\n  \t\tborder-radius: 8px;     /* optional: rounded corners */\n\t\tbackground-color: #ffffff;\n\t\tcolor: #a42622;\n\t}\n\t.uvensys a {\n\t\tbackground: #ffffff;\n\t\tcolor: #a42622;\n\t}\n\t.uvensys a:hover {\n\t\tcolor: #2c5e6a;\n\t}\n\t.uvensys p {\n\t\tcolor: #898376;\n\t}\n\t.info-box a{\n\t\tbackground: #eeeae4;\n\t\tcolor: #a42622;\n\t}\n\t.info-box a:hover{\n\t\tcolor: #2c5e6a;\n\t}\n  </style><div class=\"centered-div div-border uvensys\"><details><summary>Warum sehe ich das?</summary><p>Sie sehen dies, weil der Administrator dieser Website <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> eingerichtet hat, um den Server vor der Plage der <a href=\"https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/\">KI-Unternehmen, die aggressiv Webseiten scrapen,</a> zu schützen. Dies kann und führt tatsächlich zu Ausfallzeiten der Websites, wodurch deren Ressourcen für alle unzugänglich werden.</p><p>Anubis ist ein Kompromiss. Anubis verwendet ein <a href=\"https://anubis.techaro.lol/docs/design/why-proof-of-work\">Proof-of-Work</a>- Verfahren ähnlich wie <a href=\"https://en.wikipedia.org/wiki/Hashcash\">Hashcash</a>, ein vorgeschlagenes Proof-of-Work-Verfahren zur Reduzierung von E-Mail-Spam. Die Idee ist, dass die zusätzliche Belastung auf individueller Ebene vernachlässigbar ist, sich jedoch bei massenhaftem Scraping summiert und es deutlich teurer macht.</p><p>Letztlich ist dies ein Hack, dessen eigentlicher Zweck darin besteht, eine „gut genug“-Platzhalterlösung bereitzustellen, sodass mehr Zeit für das Fingerprinting und die Identifikation von Headless-Browsern (z.\u202fB. über deren Schriftarten-Rendering) aufgewendet werden kann. Dadurch muss die Proof-of-Work-Seite nicht legitimen Nutzern angezeigt werden.</p><p>Bitte beachten Sie, dass Anubis die Verwendung moderner JavaScript-Funktionen erfordert, die durch Plugins wie <a href=\"https://jshelter.org/\">JSHelter</a> deaktiviert werden können. Bitte deaktivieren Sie JSHelter oder ähnliche Plugins für diese Domain.</p></details><div class=\"main-content \"><h1>Ihr Partner für den IT-Betrieb</h1><h2>Ihre IT in guten Händen</h2><p>uvensys wurde 2012 gegründet. Die Idee damals wie heute ist es Unternehmen, die dies nicht selbst können oder wollen, qualitativ hochwertigen aber fair bepreisten IT-Betrieb anzubieten. Die Kernkompetenz liegt dabei seit jeher vor allem auf Linux und OpenSource. Heute bieten wir ein sehr diverses Portfolio von Technologien und Lösungen, mit dem wir auch Ihren Anwendungsfall abbilden können.</p><strong><a href=\"https://uvensys.de/ueber-uns/\">Möchten Sie mehr wissen?</a></strong></div><div class=\"info-section\"><div class=\"info-box\"><h3 class=\"centered-div\">Quicklinks</h3><ul><li><a href=\"https://uvensys.de/impressum\">Impressum</a></li><li><a href=\"https://uvensys.de/datenschutzerklaerung\">Datenschutzerklaerung</a></li><li><a href=\"https://uvensys.de/kontakt/#kontaktformular\">Kontaktformular</a></li><li><a href=\"https://jira.uvensys.de/servicedesk/\">uvensys-Ticketsystem</a></li></ul></div><div class=\"info-box\"><h3 class=\"centered-div\">Social Media</h3><div class=\"social-media\"><a href=\"https://www.facebook.com/UvensysGmbh\" class=\"fa fa-facebook\"></a> <a href=\"https://www.xing.com/pages/uvensysgmbh\" class=\"fa fa-xing\"></a> <a href=\"https://www.linkedin.com/company/uvensys-gmbh\" class=\"fa fa-linkedin\"></a> <a href=\"https://twitter.com/uvensys\" class=\"fa fa-twitter\"></a></div></div><div class=\"info-box\"><h3 class=\"centered-div\">Kontakt</h3><p>uvensys GmbH<br>Robert-Bosch-Straße 4b<br>35440 Linden</p><p><a href=\"tel:06403789360\">+49 (0) 6403 789 360</a></p></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><style>\n    summary {\n      cursor: pointer;\n      font-weight: bold;\n      margin-top: 20px;\n    }\t\n    .main-content {\n      margin: 10px auto;\n      max-width: 800px;\n      padding: 0 10px;\n    }\n\n    .info-section {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: center;\n      gap: 20px;\n      margin-top: 10px;\n    }\n\n    .info-box {\n      background: #eeeae4;\n      border-radius: 10px;\n      box-shadow: 0 4px 10px rgba(0,0,0,0.1);\n      padding: 20px;\n      width: 180px;\n      text-align: center;\n\t  color: #564e3c;\n    }\n\n    .info-box ul {\n      list-style: none;\n      padding: 0;\n    }\n\n    .info-box li {\n      margin-bottom: 10px;\n\t  text-align: left;\n    }\n\t\n\t\n\t\n    .social-media {\n  \t  display: grid;\n  \t  grid-template-columns: repeat(2, 60px); /* 2 columns of 60px */\n  \t  grid-template-rows: repeat(2, 60px);    /* 2 rows of 60px */\n  \t  gap: 15px;\n  \t  justify-content: center;\n  \t  align-items: center;\n  \t  margin-top: 10px;\n\t}\n\n\t.social-media a.fa {\n\t  width: 60px;\n\t  height: 60px;\n\t  line-height: 60px; /* vertically center the icon */\n\t  font-size: 28px;\n\t  background-color: #aaaaaa;\n\t  color: white;\n\t  text-align: center;1\n\t  border-radius: 50%;\n\t  display: inline-block;\n\t  transition: opacity 0.3s;\n\t}\n\n\t.social-media a.fa:hover {\n\t  opacity: 0.7;\n\t}\n\n\t.div-border {\n\t\tborder: 2px solid #333; /* thickness, style, color */\n  \t\tpadding: 20px;          /* space inside the border */\n  \t\tmargin: 20px;           /* space outside the border */\n  \t\tborder-radius: 8px;     /* optional: rounded corners */\n\t\tbackground-color: #ffffff;\n\t\tcolor: #a42622;\n\t}\n\t.uvensys a {\n\t\tbackground: #ffffff;\n\t\tcolor: #a42622;\n\t}\n\t.uvensys a:hover {\n\t\tcolor: #2c5e6a;\n\t}\n\t.uvensys p {\n\t\tcolor: #898376;\n\t}\n\t.info-box a{\n\t\tbackground: #eeeae4;\n\t\tcolor: #a42622;\n\t}\n\t.info-box a:hover{\n\t\tcolor: #2c5e6a;\n\t}\n  </style><div class=\"centered-div div-border uvensys\"><details><summary>Warum sehe ich das?</summary><p>Sie sehen dies, weil der Administrator dieser Website <a href=\"https://github.com/TecharoHQ/anubis\">Anubis</a> eingerichtet hat, um den Server vor der Plage der <a href=\"https://thelibre.news/foss-infrastructure-is-under-attack-by-ai-companies/\">KI-Unternehmen, die aggressiv Webseiten scrapen,</a> zu schützen. Dies kann und führt tatsächlich zu Ausfallzeiten der Websites, wodurch deren Ressourcen für alle unzugänglich werden.</p><p>Anubis ist ein Kompromiss. Anubis verwendet ein <a href=\"https://anubis.techaro.lol/docs/design/why-proof-of-work\">Proof-of-Work</a>- Verfahren ähnlich wie <a href=\"https://en.wikipedia.org/wiki/Hashcash\">Hashcash</a>, ein vorgeschlagenes Proof-of-Work-Verfahren zur Reduzierung von E-Mail-Spam. Die Idee ist, dass die zusätzliche Belastung auf individueller Ebene vernachlässigbar ist, sich jedoch bei massenhaftem Scraping summiert und es deutlich teurer macht.</p><p>Letztlich ist dies ein Hack, dessen eigentlicher Zweck darin besteht, eine „gut genug“-Platzhalterlösung bereitzustellen, sodass mehr Zeit für das Fingerprinting und die Identifikation von Headless-Browsern (z.\u202fB. über deren Schriftarten-Rendering) aufgewendet werden kann. Dadurch muss die Proof-of-Work-Seite nicht legitimen Nutzern angezeigt werden.</p><p>Bitte beachten Sie, dass Anubis die Verwendung moderner JavaScript-Funktionen erfordert, die durch Plugins wie <a href=\"https://jshelter.org/\">JSHelter</a> deaktiviert werden können. Bitte deaktivieren Sie JSHelter oder ähnliche Plugins für diese Domain.</p></details><div class=\"main-content \"><h1>Ihr Partner für den IT-Betrieb</h1><h2>Ihre IT in guten Händen</h2><p>uvensys wurde 2012 gegründet. Die Idee damals wie heute ist es Unternehmen, die dies nicht selbst können oder wollen, qualitativ hochwertigen aber fair bepreisten IT-Betrieb anzubieten. Die Kernkompetenz liegt dabei seit jeher vor allem auf Linux und OpenSource. Heute bieten wir ein sehr diverses Portfolio von Technologien und Lösungen, mit dem wir auch Ihren Anwendungsfall abbilden können.</p><strong><a href=\"https://uvensys.de/ueber-uns/\">Möchten Sie mehr wissen?</a></strong></div><div class=\"info-section\"><div class=\"info-box\"><h3 class=\"centered-div\">Quicklinks</h3><ul><li><a href=\"https://uvensys.de/impressum\">Impressum</a></li><li><a href=\"https://uvensys.de/datenschutzerklaerung\">Datenschutzerklaerung</a></li><li><a href=\"https://uvensys.de/kontakt/#kontaktformular\">Kontaktformular</a></li><li><a href=\"https://jira.uvensys.de/servicedesk/\">uvensys-Ticketsystem</a></li></ul></div><div class=\"info-box\"><h3 class=\"centered-div\">Social Media</h3><div class=\"social-media\"><a href=\"https://www.facebook.com/UvensysGmbh\" class=\"fa fa-facebook\"></a> <a href=\"https://www.xing.com/pages/uvensysgmbh\" class=\"fa fa-xing\"></a> <a href=\"https://www.linkedin.com/company/uvensys-gmbh\" class=\"fa fa-linkedin\"></a> <a href=\"https://twitter.com/uvensys\" class=\"fa fa-twitter\"></a></div></div><div class=\"info-box\"><h3 class=\"centered-div\">Kontakt</h3><p>uvensys GmbH<br>Robert-Bosch-Straße 4b<br>35440 Linden</p><p><a href=\"tel:06403789360\">+49 (0) 6403 789 360</a></p></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
