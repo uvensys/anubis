@@ -3,7 +3,7 @@ services:
     image: ko.local/uvensys/anubis:latest
     environment:
       BIND: ":8080"
-      DIFFICULTY: "5"
+      DIFFICULTY: "8"
       METRICS_BIND: ":9090"
       SERVE_ROBOTS_TXT: "true"
       TARGET: "http://nginx"
