@@ -31,3 +31,7 @@ func ErrorPage(msg string, mail string) templ.Component {
 func Bench() templ.Component {
 	return bench()
 }
+
+func Company() templ.Component {
+	return company()
+}

@@ -3,9 +3,11 @@ package web
 import (
 	"github.com/TecharoHQ/anubis"
 	"github.com/TecharoHQ/anubis/xess"
+	"os"
 )
 
 templ base(title string, body templ.Component, challenge any, ogTags map[string]string) {
+	{{ company_foot := Company() }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -63,8 +65,15 @@ templ base(title string, body templ.Component, challenge any, ogTags map[string]
 			<main>
 				<center>
 					<h1 id="title" class=".centered-div">{ title }</h1>
+					<h2 id="title" class=".centered-div">Service Managed by  {{ company := os.Getenv("COMPANY")}} 
+						<strong id="company">
+							{company}
+						</strong>
+					</h2>
 				</center>
 				@body
+				
+				@company_foot
 				<footer>
 					<center>
 						<p>
@@ -81,9 +90,10 @@ templ base(title string, body templ.Component, challenge any, ogTags map[string]
 }
 
 templ index() {
+	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
-		<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version }/>
-		<img style="display:none;" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" + anubis.Version }/>
+		<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
+		<img style="display:none;" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
 		<p id="status">Loading...</p>
 		<script async type="module" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/main.mjs?cacheBuster=" + anubis.Version }></script>
 		<div id="progress" role="progressbar" aria-labelledby="status">
@@ -135,8 +145,9 @@ templ index() {
 }
 
 templ errorPage(message string, mail string) {
+	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
-		<img id="image" alt="Sad Anubis" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject.webp?cacheBuster=" + anubis.Version }/>
+		<img id="image" alt="Sad Anubis" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
 		<p>{ message }.</p>
 		<button onClick="window.location.reload();">Try again</button>
 		if mail != "" {
@@ -153,11 +164,13 @@ templ errorPage(message string, mail string) {
 }
 
 templ StaticHappy() {
-	<div class="centered-div">
-		<img
-			style="display:none;"
-			style="width:100%;max-width:256px;"
-			src={ "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" +
+
+	{{ company := os.Getenv("COMPANY") }}
+<div class="centered-div">
+    <img
+            style="display:none;"
+            style="width:100%;max-width:256px;"
+            src={ "/.within.website/x/cmd/anubis/static/img/happy_" +  company  + ".webp?cacheBuster=" +
     anubis.Version }
 		/>
 		<p>This is just a check endpoint for your reverse proxy to use.</p>
@@ -165,6 +178,7 @@ templ StaticHappy() {
 }
 
 templ bench() {
+	{{ company := os.Getenv("COMPANY") }}
 	<div style="height:20rem;display:flex">
 		<table style="margin-top:1rem;display:grid;grid-template:auto 1fr/auto auto;gap:0 0.5rem">
 			<thead
@@ -187,7 +201,7 @@ templ bench() {
 			></tbody>
 		</table>
 		<div class="centered-div">
-			<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version }/>
+			<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
 			<p id="status" style="max-width:256px">Loading...</p>
 			<script async type="module" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/bench.mjs?cacheBuster=" + anubis.Version }></script>
 			<div id="sparkline"></div>
@@ -212,4 +226,15 @@ templ bench() {
 			</select>
 		</div>
 	</form>
+}
+
+templ company() {
+	{{ company := os.Getenv("COMPANY")}} 
+	{{ file, err := Static.ReadFile("static/footer_"+ company +".html")}}
+	{{ print(err)}}
+	{{ content := string(file)}}
+	{{ print(content)}}
+	<div> 
+	@templ.Raw(content)
+	</div>
 }
