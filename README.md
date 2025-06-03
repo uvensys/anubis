@@ -19,6 +19,7 @@ Anubis is brought to you by sponsors and donors like:
 [![canine.tools](./docs/static/img/sponsors/caninetools-logo.webp)](https://canine.tools?utm_campaign=github&utm_medium=referral&utm_content=anubis)
 [![Weblate](./docs/static/img/sponsors/weblate-logo.webp)](https://weblate.org/)
 [![Uberspace](./docs/static/img/sponsors/uberspace-logo.webp)](https://uberspace.de/)
+[![Wildbase](./docs/static/img/sponsors/wildbase-logo.webp)](https://wildbase.xyz/)
 
 ## Overview
 
