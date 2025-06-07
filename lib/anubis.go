@@ -66,10 +66,10 @@ type Server struct {
 	policy     *policy.ParsedConfig
 	DNSBLCache *decaymap.Impl[string, dnsbl.DroneBLResponse]
 	OGTags     *ogtags.OGTagCache
+	cookieName string
 	priv       ed25519.PrivateKey
 	pub        ed25519.PublicKey
 	opts       Options
-	cookieName string
 }
 
 func (s *Server) challengeFor(r *http.Request, difficulty int) string {
@@ -400,11 +400,6 @@ func (s *Server) PassChallenge(w http.ResponseWriter, r *http.Request) {
 	challengesValidated.WithLabelValues(rule.Challenge.Algorithm).Inc()
 	lg.Debug("challenge passed, redirecting to app")
 	http.Redirect(w, r, redir, http.StatusFound)
-}
-
-func (s *Server) TestError(w http.ResponseWriter, r *http.Request) {
-	err := r.FormValue("err")
-	s.respondWithError(w, r, err)
 }
 
 func cr(name string, rule config.Rule) policy.CheckResult {
