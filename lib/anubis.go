@@ -402,12 +402,19 @@ func (s *Server) PassChallenge(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redir, http.StatusFound)
 }
 
-func cr(name string, rule config.Rule) policy.CheckResult {
+func cr(name string, rule config.Rule, weight int) policy.CheckResult {
 	return policy.CheckResult{
-		Name: name,
-		Rule: rule,
+		Name:   name,
+		Rule:   rule,
+		Weight: weight,
 	}
 }
+
+var (
+	weightOkayStatic    = policy.NewStaticHashChecker("weight/okay")
+	weightMildSusStatic = policy.NewStaticHashChecker("weight/mild-suspicion")
+	weightVerySusStatic = policy.NewStaticHashChecker("weight/extreme-suspicion")
+)
 
 // Check evaluates the list of rules, and returns the result
 func (s *Server) check(r *http.Request) (policy.CheckResult, *policy.Bot, error) {
@@ -421,6 +428,8 @@ func (s *Server) check(r *http.Request) (policy.CheckResult, *policy.Bot, error)
 		return decaymap.Zilch[policy.CheckResult](), nil, fmt.Errorf("[misconfiguration] %q is not an IP address", host)
 	}
 
+	weight := 0
+
 	for _, b := range s.policy.Bots {
 		match, err := b.Rules.Check(r)
 		if err != nil {
@@ -428,11 +437,47 @@ func (s *Server) check(r *http.Request) (policy.CheckResult, *policy.Bot, error)
 		}
 
 		if match {
-			return cr("bot/"+b.Name, b.Action), &b, nil
+			switch b.Action {
+			case config.RuleDeny, config.RuleAllow, config.RuleBenchmark, config.RuleChallenge:
+				return cr("bot/"+b.Name, b.Action, weight), &b, nil
+			case config.RuleWeigh:
+				slog.Debug("adjusting weight", "name", b.Name, "delta", b.Weight.Adjust)
+				weight += b.Weight.Adjust
+			}
 		}
 	}
 
-	return cr("default/allow", config.RuleAllow), &policy.Bot{
+	switch {
+	case weight <= 0:
+		return cr("weight/okay", config.RuleAllow, weight), &policy.Bot{
+			Challenge: &config.ChallengeRules{
+				Difficulty: s.policy.DefaultDifficulty,
+				ReportAs:   s.policy.DefaultDifficulty,
+				Algorithm:  config.DefaultAlgorithm,
+			},
+			Rules: weightOkayStatic,
+		}, nil
+	case weight > 0 && weight < 10:
+		return cr("weight/mild-suspicion", config.RuleChallenge, weight), &policy.Bot{
+			Challenge: &config.ChallengeRules{
+				Difficulty: s.policy.DefaultDifficulty,
+				ReportAs:   s.policy.DefaultDifficulty,
+				Algorithm:  "metarefresh",
+			},
+			Rules: weightMildSusStatic,
+		}, nil
+	case weight >= 10:
+		return cr("weight/extreme-suspicion", config.RuleChallenge, weight), &policy.Bot{
+			Challenge: &config.ChallengeRules{
+				Difficulty: s.policy.DefaultDifficulty,
+				ReportAs:   s.policy.DefaultDifficulty,
+				Algorithm:  "fast",
+			},
+			Rules: weightVerySusStatic,
+		}, nil
+	}
+
+	return cr("default/allow", config.RuleAllow, weight), &policy.Bot{
 		Challenge: &config.ChallengeRules{
 			Difficulty: s.policy.DefaultDifficulty,
 			ReportAs:   s.policy.DefaultDifficulty,
