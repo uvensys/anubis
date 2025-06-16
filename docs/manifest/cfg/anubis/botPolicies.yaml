@@ -56,7 +56,7 @@ bots:
     expression:
       any:
         - path.startsWith("/blog/atom.")
-        - path.startsWith("/blog/rss.)
+        - path.startsWith("/blog/rss.")
 
   # Generic catchall rule
   - name: generic-browser
