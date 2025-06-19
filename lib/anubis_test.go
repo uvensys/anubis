@@ -44,6 +44,10 @@ func loadPolicies(t *testing.T, fname string, difficulty int) *policy.ParsedConf
 func spawnAnubis(t *testing.T, opts Options) *Server {
 	t.Helper()
 
+	if opts.Policy == nil {
+		opts.Policy = loadPolicies(t, "", 4)
+	}
+
 	s, err := New(opts)
 	if err != nil {
 		t.Fatalf("can't construct libanubis.Server: %v", err)
