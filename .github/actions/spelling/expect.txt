@@ -67,6 +67,7 @@ distros
 dnf
 dnsbl
 dnserr
+domainhere
 dracula
 dronebl
 droneblresponse
@@ -145,6 +146,7 @@ JWTs
 kagi
 kagibot
 keikaku
+Keyfunc
 keypair
 KHTML
 kinda
@@ -313,4 +315,5 @@ yourdomain
 yoursite
 Zenos
 zizmor
+Zonbocom
 zos
