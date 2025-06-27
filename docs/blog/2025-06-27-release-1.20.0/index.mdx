@@ -51,7 +51,7 @@ The biggest feature in Anubis is the "weight" subsystem. This allows administrat
 
 This is different from the past where you could only allow every request with a Gitea session token, meaning that the invention of lying would allow malicious clients to bypass protection.
 
-Weight is added and removed whenever a `WEIGH` rule is encountered. When all rules are processed and the request doesn't match any `ALLOW`, `CHALLENGE`, or `DENY` rules, Anubis uses [weight thresholds](docs/admin/configuration/thresholds) to figure out how to handle that request. Thresholds are defined in the [policy file](/docs/admin/policies) alongside your bot rules:
+Weight is added and removed whenever a `WEIGH` rule is encountered. When all rules are processed and the request doesn't match any `ALLOW`, `CHALLENGE`, or `DENY` rules, Anubis uses [weight thresholds](/docs/admin/configuration/thresholds) to figure out how to handle that request. Thresholds are defined in the [policy file](/docs/admin/policies) alongside your bot rules:
 
 ```yaml
 thresholds:
