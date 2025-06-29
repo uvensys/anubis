@@ -42,7 +42,6 @@ cgr
 chainguard
 chall
 challengemozilla
-Chargement
 checkpath
 checkresult
 chibi
@@ -54,6 +53,7 @@ containerbuild
 coreutils
 Cotoyogi
 CRDs
+Cromite
 crt
 Cscript
 daemonizing
@@ -75,6 +75,7 @@ droneblresponse
 duckduckbot
 eerror
 ellenjoe
+emacs
 enbyware
 etld
 everyones
@@ -166,7 +167,6 @@ Linting
 linuxbrew
 LLU
 loadbalancer
-locahost
 lol
 LOMINSA
 maintainership
@@ -283,6 +283,7 @@ unparseable
 uuidgen
 uvx
 UXP
+Valkey
 Varis
 Velen
 vendored
@@ -320,5 +321,5 @@ yourdomain
 yoursite
 Zenos
 zizmor
-Zonbocom
+zombocom
 zos
