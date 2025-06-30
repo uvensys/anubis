@@ -51,6 +51,7 @@ var (
 	cookiePrefix             = flag.String("cookie-prefix", "techaro.lol-anubis", "prefix for browser cookies created by Anubis")
 	cookiePartitioned        = flag.Bool("cookie-partitioned", false, "if true, sets the partitioned flag on Anubis cookies, enabling CHIPS support")
 	hs512Secret              = flag.String("hs512-secret", "", "secret used to sign JWTs, uses ed25519 if not set")
+	cookieSecure             = flag.Bool("cookie-secure", true, "if true, sets the secure flag on Anubis cookies")
 	ed25519PrivateKeyHex     = flag.String("ed25519-private-key-hex", "", "private key used to sign JWTs, if not set a random one will be assigned")
 	ed25519PrivateKeyHexFile = flag.String("ed25519-private-key-hex-file", "", "file name containing value for ed25519-private-key-hex")
 	metricsBind              = flag.String("metrics-bind", ":9090", "network address to bind metrics to")
@@ -403,6 +404,7 @@ func main() {
 		Target:              *target,
 		WebmasterEmail:      *webmasterEmail,
 		OpenGraph:           policy.OpenGraph,
+		CookieSecure:        *cookieSecure,
 	})
 	if err != nil {
 		log.Fatalf("can't construct libanubis.Server: %v", err)
