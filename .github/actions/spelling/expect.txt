@@ -16,6 +16,7 @@ aspirational
 atuin
 azuretools
 badregexes
+bbolt
 bdba
 berr
 bingbot
@@ -46,11 +47,13 @@ cgr
 chainguard
 chall
 challengemozilla
+challengetest
 checkpath
 checkresult
 chibi
 cidranger
 ckie
+ckies
 cloudflare
 Codespaces
 confd
@@ -232,6 +235,7 @@ qwantbot
 rac
 rawler
 rcvar
+rdb
 redhat
 redir
 redirectscheme
@@ -270,6 +274,7 @@ srv
 stackoverflow
 startprecmd
 stoppostcmd
+storetest
 subgrid
 subr
 subrequest
@@ -284,6 +289,7 @@ techarohq
 templ
 templruntime
 testarea
+testdb
 Thancred
 thoth
 thothmock
@@ -291,6 +297,8 @@ Tik
 Timpibot
 traefik
 uberspace
+Unbreak
+unbreakdocker
 unifiedjs
 unixhttpd
 unmarshal
@@ -298,7 +306,7 @@ unparseable
 uuidgen
 uvx
 UXP
-Valkey
+valkey
 Varis
 Velen
 vendored

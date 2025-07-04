@@ -145,6 +145,14 @@ status_codes:
   CHALLENGE: 200
   DENY: 200
 
+# Anubis can store temporary data in one of a few backends. See the storage
+# backends section of the docs for more information:
+#
+# https://anubis.techaro.lol/docs/admin/policies#storage-backends
+store:
+  backend: memory
+  parameters: {}
+
 # The weight thresholds for when to trigger individual challenges. Any
 # CHALLENGE will take precedence over this.
 #

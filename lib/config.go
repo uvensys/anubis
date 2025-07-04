@@ -110,6 +110,7 @@ func New(opts Options) (*Server, error) {
 		opts:        opts,
 		DNSBLCache:  decaymap.New[string, dnsbl.DroneBLResponse](),
 		OGTags:      ogtags.NewOGTagCache(opts.Target, opts.Policy.OpenGraph),
+		store:       opts.Policy.Store,
 	}
 
 	mux := http.NewServeMux()

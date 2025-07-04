@@ -1,0 +1,19 @@
+services:
+  valkey:
+    image: valkey/valkey:8
+    pull_policy: always
+
+  # VS Code workspace service
+  workspace:
+    image: ghcr.io/techarohq/anubis/devcontainer
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      cache_from:
+        - "type=registry,ref=ghcr.io/techarohq/anubis/devcontainer"
+    volumes:
+      - ../:/workspace/anubis:cached
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+    #entrypoint: ["/usr/bin/sleep", "infinity"]
+    user: vscode

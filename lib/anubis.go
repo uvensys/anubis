@@ -1,8 +1,9 @@
 package lib
 
 import (
+	"context"
 	"crypto/ed25519"
-	"crypto/sha256"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/cel-go/common/types"
+	"github.com/google/uuid"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -30,6 +32,7 @@ import (
 	"github.com/TecharoHQ/anubis/lib/policy"
 	"github.com/TecharoHQ/anubis/lib/policy/checker"
 	"github.com/TecharoHQ/anubis/lib/policy/config"
+	"github.com/TecharoHQ/anubis/lib/store"
 
 	// challenge implementations
 	_ "github.com/TecharoHQ/anubis/lib/challenge/metarefresh"
@@ -72,6 +75,7 @@ type Server struct {
 	ed25519Priv ed25519.PrivateKey
 	hs512Secret []byte
 	opts        Options
+	store       store.Interface
 }
 
 func (s *Server) getTokenKeyfunc() jwt.Keyfunc {
@@ -87,23 +91,51 @@ func (s *Server) getTokenKeyfunc() jwt.Keyfunc {
 	}
 }
 
-func (s *Server) challengeFor(r *http.Request, difficulty int) string {
-	var fp [32]byte
-	if len(s.hs512Secret) == 0 {
-		fp = sha256.Sum256(s.ed25519Priv.Public().(ed25519.PublicKey)[:])
-	} else {
-		fp = sha256.Sum256(s.hs512Secret)
+func (s *Server) challengeFor(r *http.Request) (*challenge.Challenge, error) {
+	ckies := r.CookiesNamed(anubis.TestCookieName)
+
+	if len(ckies) == 0 {
+		return s.issueChallenge(r.Context(), r)
 	}
 
-	challengeData := fmt.Sprintf(
-		"X-Real-IP=%s,User-Agent=%s,WeekTime=%s,Fingerprint=%x,Difficulty=%d",
-		r.Header.Get("X-Real-Ip"),
-		r.UserAgent(),
-		time.Now().UTC().Round(24*7*time.Hour).Format(time.RFC3339),
-		fp,
-		difficulty,
-	)
-	return internal.FastHash(challengeData)
+	j := store.JSON[challenge.Challenge]{Underlying: s.store}
+
+	ckie := ckies[0]
+	chall, err := j.Get(r.Context(), "challenge:"+ckie.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &chall, nil
+}
+
+func (s *Server) issueChallenge(ctx context.Context, r *http.Request) (*challenge.Challenge, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	var randomData = make([]byte, 256)
+	if _, err := rand.Read(randomData); err != nil {
+		return nil, err
+	}
+
+	chall := challenge.Challenge{
+		ID:         id.String(),
+		RandomData: fmt.Sprintf("%x", randomData),
+		IssuedAt:   time.Now(),
+		Metadata: map[string]string{
+			"User-Agent": r.Header.Get("User-Agent"),
+			"X-Real-Ip":  r.Header.Get("X-Real-Ip"),
+		},
+	}
+
+	j := store.JSON[challenge.Challenge]{Underlying: s.store}
+	if err := j.Set(ctx, "challenge:"+id.String(), chall, 30*time.Minute); err != nil {
+		return nil, err
+	}
+
+	return &chall, err
 }
 
 func (s *Server) maybeReverseProxyHttpStatusOnly(w http.ResponseWriter, r *http.Request) {
@@ -309,15 +341,30 @@ func (s *Server) MakeChallenge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	lg = lg.With("check_result", cr)
-	chal := s.challengeFor(r, rule.Challenge.Difficulty)
 
-	s.SetCookie(w, CookieOpts{Host: r.Host, Name: anubis.TestCookieName, Value: chal})
+	chall, err := s.challengeFor(r)
+	if err != nil {
+		lg.Error("failed to fetch or issue challenge", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		err := encoder.Encode(struct {
+			Error string `json:"error"`
+		}{
+			Error: fmt.Sprintf("%s \"makeChallenge\"", localizer.T("internal_server_error")),
+		})
+		if err != nil {
+			lg.Error("failed to encode error response", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	s.SetCookie(w, CookieOpts{Host: r.Host, Name: anubis.TestCookieName, Value: chall.ID})
 
 	err = encoder.Encode(struct {
 		Rules     *config.ChallengeRules `json:"rules"`
 		Challenge string                 `json:"challenge"`
 	}{
-		Challenge: chal,
+		Challenge: chall.RandomData,
 		Rules:     rule.Challenge,
 	})
 	if err != nil {
@@ -325,7 +372,7 @@ func (s *Server) MakeChallenge(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	lg.Debug("made challenge", "challenge", chal, "rules", rule.Challenge, "cr", cr)
+	lg.Debug("made challenge", "challenge", chall, "rules", rule.Challenge, "cr", cr)
 	challengesIssued.WithLabelValues("api").Inc()
 }
 
@@ -384,9 +431,20 @@ func (s *Server) PassChallenge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	challengeStr := s.challengeFor(r, rule.Challenge.Difficulty)
+	chall, err := s.challengeFor(r)
+	if err != nil {
+		lg.Error("check failed", "err", err)
+		s.respondWithError(w, r, fmt.Sprintf("%s: %s", localizer.T("internal_server_error"), rule.Challenge.Algorithm))
+		return
+	}
 
-	if err := impl.Validate(r, lg, rule, challengeStr); err != nil {
+	in := &challenge.ValidateInput{
+		Challenge: chall,
+		Rule:      rule,
+		Store:     s.store,
+	}
+
+	if err := impl.Validate(r, lg, in); err != nil {
 		failedValidations.WithLabelValues(rule.Challenge.Algorithm).Inc()
 		var cerr *challenge.Error
 		s.ClearCookie(w, CookieOpts{Path: cookiePath, Host: r.Host})
@@ -405,7 +463,7 @@ func (s *Server) PassChallenge(w http.ResponseWriter, r *http.Request) {
 
 	// generate JWT cookie
 	tokenString, err := s.signJWT(jwt.MapClaims{
-		"challenge":  challengeStr,
+		"challenge":  chall.ID,
 		"method":     rule.Challenge.Algorithm,
 		"policyRule": rule.Hash(),
 		"action":     string(cr.Rule),

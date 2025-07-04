@@ -15,7 +15,7 @@ import (
 	"github.com/TecharoHQ/anubis/lib/localization"
 )
 
-func page(challenge, redir string, difficulty int, loc *localization.SimpleLocalizer) templ.Component {
+func page(redir string, difficulty int, loc *localization.SimpleLocalizer) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
