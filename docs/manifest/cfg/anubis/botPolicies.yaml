@@ -127,3 +127,8 @@ impressum:
 status_codes:
   CHALLENGE: 200
   DENY: 200
+
+store:
+  backend: bbolt
+  parameters:
+    path: /xe/data/anubis/data.bdb
