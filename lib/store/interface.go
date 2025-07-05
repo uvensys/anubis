@@ -43,13 +43,22 @@ func z[T any]() T { return *new(T) }
 
 type JSON[T any] struct {
 	Underlying Interface
+	Prefix     string
 }
 
 func (j *JSON[T]) Delete(ctx context.Context, key string) error {
+	if j.Prefix != "" {
+		key = j.Prefix + key
+	}
+
 	return j.Underlying.Delete(ctx, key)
 }
 
 func (j *JSON[T]) Get(ctx context.Context, key string) (T, error) {
+	if j.Prefix != "" {
+		key = j.Prefix + key
+	}
+
 	data, err := j.Underlying.Get(ctx, key)
 	if err != nil {
 		return z[T](), err
@@ -64,6 +73,10 @@ func (j *JSON[T]) Get(ctx context.Context, key string) (T, error) {
 }
 
 func (j *JSON[T]) Set(ctx context.Context, key string, value T, expiry time.Duration) error {
+	if j.Prefix != "" {
+		key = j.Prefix + key
+	}
+
 	data, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrCantEncode, err)

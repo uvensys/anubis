@@ -70,7 +70,6 @@ type Server struct {
 	next        http.Handler
 	mux         *http.ServeMux
 	policy      *policy.ParsedConfig
-	DNSBLCache  *decaymap.Impl[string, dnsbl.DroneBLResponse]
 	OGTags      *ogtags.OGTagCache
 	ed25519Priv ed25519.PrivateKey
 	hs512Secret []byte
@@ -279,15 +278,16 @@ func (s *Server) checkRules(w http.ResponseWriter, r *http.Request, cr policy.Ch
 }
 
 func (s *Server) handleDNSBL(w http.ResponseWriter, r *http.Request, ip string, lg *slog.Logger) bool {
+	db := &store.JSON[dnsbl.DroneBLResponse]{Underlying: s.store, Prefix: "dronebl:"}
 	if s.policy.DNSBL && ip != "" {
-		resp, ok := s.DNSBLCache.Get(ip)
-		if !ok {
+		resp, err := db.Get(r.Context(), ip)
+		if err != nil {
 			lg.Debug("looking up ip in dnsbl")
 			resp, err := dnsbl.Lookup(ip)
 			if err != nil {
 				lg.Error("can't look up ip in dnsbl", "err", err)
 			}
-			s.DNSBLCache.Set(ip, resp, 24*time.Hour)
+			db.Set(r.Context(), ip, resp, 24*time.Hour)
 			droneBLHits.WithLabelValues(resp.String()).Inc()
 		}
 
@@ -550,9 +550,4 @@ func (s *Server) check(r *http.Request) (policy.CheckResult, *policy.Bot, error)
 		},
 		Rules: &checker.List{},
 	}, nil
-}
-
-func (s *Server) CleanupDecayMap() {
-	s.DNSBLCache.Cleanup()
-	s.OGTags.Cleanup()
 }
