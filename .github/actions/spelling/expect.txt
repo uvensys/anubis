@@ -20,7 +20,7 @@ bbolt
 bdba
 berr
 bingbot
-bitcoin
+Bitcoin
 bitrate
 blogging
 Bluesky
@@ -130,7 +130,6 @@ Hashcash
 hashrate
 headermap
 healthcheck
-hebis
 hec
 hmc
 hostable
@@ -250,7 +249,6 @@ RUnlock
 runtimedir
 sas
 sasl
-Scumm
 searchbot
 searx
 sebest
@@ -263,10 +261,8 @@ shellcheck
 Sidetrade
 simprint
 sitemap
-skopeo
 sls
 sni
-Sourceware
 Spambot
 sparkline
 spyderbot
@@ -289,7 +285,6 @@ techarohq
 templ
 templruntime
 testarea
-testdb
 Thancred
 thoth
 thothmock
