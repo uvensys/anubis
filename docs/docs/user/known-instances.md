@@ -48,6 +48,7 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - https://ebird.org/
 - https://fabulous.systems/
 - https://coinhoards.org/
+- https://pluralpedia.org/
 - <details>
   <summary>FreeCAD</summary>
   - https://forum.freecad.org/
