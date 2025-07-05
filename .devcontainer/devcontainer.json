@@ -2,14 +2,6 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/debian
 {
   "name": "Dev",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  // "build": {
-  //   "dockerfile": "./Dockerfile",
-  //   "context": "..",
-  //   "cacheFrom": [
-  //     "type=registry,ref=ghcr.io/techarohq/anubis/devcontainer"
-  //   ]
-  // },
   "dockerComposeFile": ["./docker-compose.yaml"],
   "service": "workspace",
   "workspaceFolder": "/workspace/anubis",
