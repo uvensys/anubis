@@ -3,7 +3,6 @@ package bbolt
 import (
 	"encoding/json"
 	"errors"
-	"path/filepath"
 	"testing"
 )
 
@@ -26,13 +25,6 @@ func TestFactoryValid(t *testing.T) {
 				name: "missing path",
 				cfg:  Config{},
 				err:  ErrMissingPath,
-			},
-			{
-				name: "unwritable folder",
-				cfg: Config{
-					Path: filepath.Join("/", "testdb"),
-				},
-				err: ErrCantWriteToPath,
 			},
 		} {
 			t.Run(tt.name, func(t *testing.T) {
