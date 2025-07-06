@@ -38,7 +38,9 @@ func Common(t *testing.T, f store.Factory, config json.RawMessage) {
 
 				val, err := s.Get(t.Context(), t.Name())
 				if errors.Is(err, store.ErrNotFound) {
-					t.Errorf("wanted %s to exist in store but it does not", t.Name())
+					t.Errorf("wanted %s to exist in store but it does not: %v", t.Name(), err)
+				} else if err != nil {
+					t.Error(err)
 				}
 
 				if !bytes.Equal(val, []byte(t.Name())) {

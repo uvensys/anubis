@@ -12,8 +12,7 @@ func TestImpl(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "db")
 	t.Log(path)
 	data, err := json.Marshal(Config{
-		Path:   path,
-		Bucket: "anubis",
+		Path: path,
 	})
 	if err != nil {
 		t.Fatal(err)

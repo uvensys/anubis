@@ -31,6 +31,7 @@ botstopper
 BPort
 Brightbot
 broked
+byteslice
 Bytespider
 cachebuster
 cachediptoasn

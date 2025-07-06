@@ -289,10 +289,9 @@ When Anubis opens a bbolt database, it takes an exclusive lock on that database.
 
 The `bbolt` backend takes the following configuration options:
 
-| Name     | Type   | Example            | Description                                                                                                                       |
-| :------- | :----- | :----------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
-| `bucket` | string | `anubis`           | The bbolt bucket that Anubis should place all its data into. If this is not set, then Anubis will default to the bucket `anubis`. |
-| `path`   | path   | `/data/anubis.bdb` | The filesystem path for the Anubis bbolt database. Anubis requires write access to the folder containing the bbolt database.      |
+| Name   | Type | Example            | Description                                                                                                                  |
+| :----- | :--- | :----------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| `path` | path | `/data/anubis.bdb` | The filesystem path for the Anubis bbolt database. Anubis requires write access to the folder containing the bbolt database. |
 
 Example:
 

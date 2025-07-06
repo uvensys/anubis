@@ -2,7 +2,6 @@ package bbolt
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,52 +11,85 @@ import (
 	"go.etcd.io/bbolt"
 )
 
+// Sentinel error values used for testing and in admin-visible error messages.
 var (
 	ErrBucketDoesNotExist = errors.New("bbolt: bucket does not exist")
 	ErrNotExists          = errors.New("bbolt: value does not exist in store")
 )
 
-type Item struct {
-	Data    []byte    `json:"data"`
-	Expires time.Time `json:"expires"`
-}
-
+// Store implements store.Interface backed by bbolt[1].
+//
+// In essence, bbolt is a hierarchical key/value store with a twist: every value
+// needs to belong to a bucket. Buckets can contain an infinite number of
+// buckets. As such, Anubis nests values in buckets. Each value in the store
+// is given its own bucket with two keys:
+//
+// 1. data - The raw data, usually in JSON
+// 2. expiry - The expiry time formatted as a time.RFC3339Nano timestamp string
+//
+// When Anubis stores a new bit of data, it creates a new bucket for that value.
+// This allows the cleanup phase to iterate over every bucket in the database and
+// only scan the expiry times without having to decode the entire record.
+//
+// bbolt is not suitable for environments where multiple instance of Anubis need
+// to read from and write to the same backend store. For that, use the valkey
+// storage backend.
+//
+// [1]: https://github.com/etcd-io/bbolt
 type Store struct {
-	bucket []byte
-	bdb    *bbolt.DB
+	bdb *bbolt.DB
 }
 
+// Delete a key from the datastore. If the key does not exist, return an error.
 func (s *Store) Delete(ctx context.Context, key string) error {
 	return s.bdb.Update(func(tx *bbolt.Tx) error {
-		bkt := tx.Bucket(s.bucket)
-		if bkt == nil {
-			return fmt.Errorf("%w: %q", ErrBucketDoesNotExist, string(s.bucket))
-		}
-
-		if bkt.Get([]byte(key)) == nil {
+		if tx.Bucket([]byte(key)) == nil {
 			return fmt.Errorf("%w: %q", ErrNotExists, key)
 		}
 
-		return bkt.Delete([]byte(key))
+		return tx.DeleteBucket([]byte(key))
 	})
 }
 
+// Get a value from the datastore.
+//
+// Because each value is stored in its own bucket with data and expiry keys,
+// two get operations are required:
+//
+// 1. Get the expiry key, parse as time.RFC3339Nano. If the key has expired, run deletion in the background and return a "key not found" error.
+// 2. Get the data key, copy into the result byteslice, return it.
 func (s *Store) Get(ctx context.Context, key string) ([]byte, error) {
-	var i Item
+	var result []byte
 
 	if err := s.bdb.View(func(tx *bbolt.Tx) error {
-		bkt := tx.Bucket(s.bucket)
-		if bkt == nil {
-			return fmt.Errorf("%w: %q", ErrBucketDoesNotExist, string(s.bucket))
-		}
-
-		bucketData := bkt.Get([]byte(key))
-		if bucketData == nil {
+		itemBucket := tx.Bucket([]byte(key))
+		if itemBucket == nil {
 			return fmt.Errorf("%w: %q", store.ErrNotFound, key)
 		}
 
-		if err := json.Unmarshal(bucketData, &i); err != nil {
-			return fmt.Errorf("%w: %w", store.ErrCantDecode, err)
+		expiryStr := itemBucket.Get([]byte("expiry"))
+		if expiryStr == nil {
+			return fmt.Errorf("[unexpected] %w: %q (expiry is nil)", store.ErrNotFound, key)
+		}
+
+		expiry, err := time.Parse(time.RFC3339Nano, string(expiryStr))
+		if err != nil {
+			return fmt.Errorf("[unexpected] %w: %w", store.ErrCantDecode, err)
+		}
+
+		if time.Now().After(expiry) {
+			go s.Delete(context.Background(), key)
+			return fmt.Errorf("%w: %q", store.ErrNotFound, key)
+		}
+
+		dataStr := itemBucket.Get([]byte("data"))
+		if dataStr == nil {
+			return fmt.Errorf("[unexpected] %w: %q (data is nil)", store.ErrNotFound, key)
+		}
+
+		result = make([]byte, len(dataStr))
+		if n := copy(result, dataStr); n != len(dataStr) {
+			return fmt.Errorf("[unexpected] %w: %d bytes copied of %d", store.ErrCantDecode, n, len(dataStr))
 		}
 
 		return nil
@@ -65,32 +97,28 @@ func (s *Store) Get(ctx context.Context, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	if time.Now().After(i.Expires) {
-		go s.Delete(context.Background(), key)
-		return nil, fmt.Errorf("%w: %q", store.ErrNotFound, key)
-	}
-
-	return i.Data, nil
+	return result, nil
 }
 
+// Set a value into the store with a given expiry.
 func (s *Store) Set(ctx context.Context, key string, value []byte, expiry time.Duration) error {
-	i := Item{
-		Data:    value,
-		Expires: time.Now().Add(expiry),
-	}
-
-	data, err := json.Marshal(i)
-	if err != nil {
-		return fmt.Errorf("%w: %w", store.ErrCantEncode, err)
-	}
+	expires := time.Now().Add(expiry)
 
 	return s.bdb.Update(func(tx *bbolt.Tx) error {
-		bkt := tx.Bucket(s.bucket)
-		if bkt == nil {
-			return fmt.Errorf("%w: %q", ErrBucketDoesNotExist, string(s.bucket))
+		valueBkt, err := tx.CreateBucketIfNotExists([]byte(key))
+		if err != nil {
+			return fmt.Errorf("%w: %w: %q (create bucket)", store.ErrCantEncode, err, key)
 		}
 
-		return bkt.Put([]byte(key), data)
+		if err := valueBkt.Put([]byte("expiry"), []byte(expires.Format(time.RFC3339Nano))); err != nil {
+			return fmt.Errorf("%w: %q (expiry)", store.ErrCantEncode, key)
+		}
+
+		if err := valueBkt.Put([]byte("data"), value); err != nil {
+			return fmt.Errorf("%w: %q (data)", store.ErrCantEncode, key)
+		}
+
+		return nil
 	})
 }
 
@@ -98,31 +126,28 @@ func (s *Store) cleanup(ctx context.Context) error {
 	now := time.Now()
 
 	return s.bdb.Update(func(tx *bbolt.Tx) error {
-		bkt := tx.Bucket(s.bucket)
-		if bkt == nil {
-			return fmt.Errorf("cache bucket %q does not exist", string(s.bucket))
-		}
+		return tx.ForEach(func(key []byte, valueBkt *bbolt.Bucket) error {
+			var expiry time.Time
+			var err error
 
-		return bkt.ForEach(func(k, v []byte) error {
-			var i Item
-
-			data := bkt.Get(k)
-			if data == nil {
-				return fmt.Errorf("%s in Cache bucket does not exist???", string(k))
+			expiryStr := valueBkt.Get([]byte("expiry"))
+			if expiryStr == nil {
+				slog.Warn("while running cleanup, expiry is not set somehow, file a bug?", "key", string(key))
+				return nil
 			}
 
-			if err := json.Unmarshal(data, &i); err != nil {
-				return fmt.Errorf("can't unmarshal data at key %s: %w", string(k), err)
+			expiry, err = time.Parse(time.RFC3339Nano, string(expiryStr))
+			if err != nil {
+				return fmt.Errorf("[unexpected] %w in bucket %q: %w", store.ErrCantDecode, string(key), err)
 			}
 
-			if now.After(i.Expires) {
-				return bkt.Delete(k)
+			if now.After(expiry) {
+				return valueBkt.DeleteBucket(key)
 			}
 
 			return nil
 		})
 	})
-
 }
 
 func (s *Store) cleanupThread(ctx context.Context) {

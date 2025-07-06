@@ -21,8 +21,12 @@ func init() {
 	store.Register("bbolt", Factory{})
 }
 
+// Factory builds new instances of the bbolt storage backend according to
+// configuration passed via a json.RawMessage.
 type Factory struct{}
 
+// Build parses and validates the bbolt storage backend Config and creates
+// a new instance of it.
 func (Factory) Build(ctx context.Context, data json.RawMessage) (store.Interface, error) {
 	var config Config
 	if err := json.Unmarshal([]byte(data), &config); err != nil {
@@ -33,28 +37,13 @@ func (Factory) Build(ctx context.Context, data json.RawMessage) (store.Interface
 		return nil, fmt.Errorf("%w: %w", store.ErrBadConfig, err)
 	}
 
-	if config.Bucket == "" {
-		config.Bucket = "anubis"
-	}
-
 	bdb, err := bbolt.Open(config.Path, 0600, nil)
 	if err != nil {
 		return nil, fmt.Errorf("can't open bbolt database %s: %w", config.Path, err)
 	}
 
-	if err := bdb.Update(func(tx *bbolt.Tx) error {
-		if _, err := tx.CreateBucketIfNotExists([]byte(config.Bucket)); err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("can't create bbolt bucket %q: %w", config.Bucket, err)
-	}
-
 	result := &Store{
-		bdb:    bdb,
-		bucket: []byte(config.Bucket),
+		bdb: bdb,
 	}
 
 	go result.cleanupThread(ctx)
@@ -62,6 +51,8 @@ func (Factory) Build(ctx context.Context, data json.RawMessage) (store.Interface
 	return result, nil
 }
 
+// Valid parses and validates the bbolt store Config or returns
+// an error.
 func (Factory) Valid(data json.RawMessage) error {
 	var config Config
 	if err := json.Unmarshal([]byte(data), &config); err != nil {
@@ -75,11 +66,13 @@ func (Factory) Valid(data json.RawMessage) error {
 	return nil
 }
 
+// Config is the bbolt storage backend configuration.
 type Config struct {
-	Path   string `json:"path"`
-	Bucket string `json:"bucket,omitempty"`
+	// Path is the filesystem path of the database. The folder must be writable to Anubis.
+	Path string `json:"path"`
 }
 
+// Valid validates the configuration including checking if its containing folder is writable.
 func (c Config) Valid() error {
 	var errs []error
 
@@ -90,6 +83,7 @@ func (c Config) Valid() error {
 		if err := os.WriteFile(filepath.Join(dir, ".test-file"), []byte(""), 0600); err != nil {
 			errs = append(errs, ErrCantWriteToPath)
 		}
+		os.Remove(filepath.Join(dir, ".test-file"))
 	}
 
 	if len(errs) != 0 {
