@@ -22,7 +22,6 @@ berr
 bingbot
 Bitcoin
 bitrate
-blogging
 Bluesky
 blueskybot
 boi
@@ -71,6 +70,7 @@ DDOS
 Debian
 debrpm
 decaymap
+devcontainers
 Diffbot
 discordapp
 discordbot

@@ -7,7 +7,8 @@
   "workspaceFolder": "/workspace/anubis",
   "postStartCommand": "npm ci && go mod download",
   "features": {
-    "ghcr.io/xe/devcontainer-features/ko:1.1.0": {}
+    "ghcr.io/xe/devcontainer-features/ko:1.1.0": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "initializeCommand": "mkdir -p ${localEnv:HOME}${localEnv:USERPROFILE}/.local/share/atuin",
   "customizations": {
