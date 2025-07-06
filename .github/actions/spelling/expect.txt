@@ -120,6 +120,7 @@ goland
 gomod
 goodbot
 googlebot
+gopsutil
 govulncheck
 goyaml
 GPG
@@ -193,6 +194,7 @@ Mojeek
 mojeekbot
 mozilla
 nbf
+nepeat
 netsurf
 nginx
 nicksnyder
@@ -259,6 +261,7 @@ Semrush
 Seo
 setsebool
 shellcheck
+shirou
 Sidetrade
 simprint
 sitemap
