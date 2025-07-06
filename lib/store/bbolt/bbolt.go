@@ -151,7 +151,7 @@ func (s *Store) cleanup(ctx context.Context) error {
 }
 
 func (s *Store) cleanupThread(ctx context.Context) {
-	t := time.NewTicker(5 * time.Minute)
+	t := time.NewTicker(time.Hour)
 	defer t.Stop()
 
 	for {
