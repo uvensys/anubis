@@ -1,6 +1,7 @@
 package ogtags
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/url"
@@ -8,21 +9,25 @@ import (
 )
 
 // GetOGTags is the main function that retrieves Open Graph tags for a URL
-func (c *OGTagCache) GetOGTags(url *url.URL, originalHost string) (map[string]string, error) {
+func (c *OGTagCache) GetOGTags(ctx context.Context, url *url.URL, originalHost string) (map[string]string, error) {
 	if url == nil {
 		return nil, errors.New("nil URL provided, cannot fetch OG tags")
+	}
+
+	if len(c.ogOverride) != 0 {
+		return c.ogOverride, nil
 	}
 
 	target := c.getTarget(url)
 	cacheKey := c.generateCacheKey(target, originalHost)
 
 	// Check cache first
-	if cachedTags := c.checkCache(cacheKey); cachedTags != nil {
+	if cachedTags := c.checkCache(ctx, cacheKey); cachedTags != nil {
 		return cachedTags, nil
 	}
 
 	// Fetch HTML content, passing the original host
-	doc, err := c.fetchHTMLDocumentWithCache(target, originalHost, cacheKey)
+	doc, err := c.fetchHTMLDocumentWithCache(ctx, target, originalHost, cacheKey)
 	if errors.Is(err, syscall.ECONNREFUSED) {
 		slog.Debug("Connection refused, returning empty tags")
 		return nil, nil
@@ -38,7 +43,7 @@ func (c *OGTagCache) GetOGTags(url *url.URL, originalHost string) (map[string]st
 	ogTags := c.extractOGTags(doc)
 
 	// Store in cache
-	c.cache.Set(cacheKey, ogTags, c.ogTimeToLive)
+	c.cache.Set(ctx, cacheKey, ogTags, c.ogTimeToLive)
 
 	return ogTags, nil
 }
@@ -55,8 +60,8 @@ func (c *OGTagCache) generateCacheKey(target string, originalHost string) string
 }
 
 // checkCache checks if we have the tags cached and returns them if so
-func (c *OGTagCache) checkCache(cacheKey string) map[string]string {
-	if cachedTags, ok := c.cache.Get(cacheKey); ok {
+func (c *OGTagCache) checkCache(ctx context.Context, cacheKey string) map[string]string {
+	if cachedTags, err := c.cache.Get(ctx, cacheKey); err == nil {
 		slog.Debug("cache hit", "tags", cachedTags)
 		return cachedTags
 	}

@@ -91,7 +91,7 @@ work valid?"}
 
 ## Proof of passing challenges
 
-When a client passes a challenge, Anubis sets an HTTP cookie named `"within.website-x-cmd-anubis-auth"` containing a signed [JWT](https://jwt.io/) (JSON Web Token). This JWT contains the following claims:
+When a client passes a challenge, Anubis sets an HTTP cookie named `"techaro.lol-anubis-auth"` containing a signed [JWT](https://jwt.io/) (JSON Web Token). This JWT contains the following claims:
 
 - `challenge`: The challenge string derived from user request metadata
 - `nonce`: The nonce / iteration number used to generate the passing response
@@ -107,7 +107,6 @@ This ensures that the token has enough metadata to prove that the token is valid
 Challenges are formed by taking some user request metadata and using that to generate a SHA-256 checksum. The following request headers are used:
 
 - `Accept-Encoding`: The content encodings that the requestor supports, such as gzip.
-- `Accept-Language`: The language that the requestor would prefer the server respond in, such as English.
 - `X-Real-Ip`: The IP address of the requestor, as set by a reverse proxy server.
 - `User-Agent`: The user agent string of the requestor.
 - The current time in UTC rounded to the nearest week.

@@ -6,13 +6,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TecharoHQ/anubis/lib/policy/config"
+	"github.com/TecharoHQ/anubis/lib/store/memory"
 	"golang.org/x/net/html"
 )
 
 // TestExtractOGTags updated with correct expectations based on filtering logic
 func TestExtractOGTags(t *testing.T) {
 	// Use a cache instance that reflects the default approved lists
-	testCache := NewOGTagCache("", false, time.Minute, false)
+	testCache := NewOGTagCache("", config.OpenGraph{
+		Enabled:      false,
+		ConsiderHost: false,
+		TimeToLive:   time.Minute,
+	}, memory.New(t.Context()))
 	// Manually set approved tags/prefixes based on the user request for clarity
 	testCache.approvedTags = []string{"description"}
 	testCache.approvedPrefixes = []string{"og:"}
@@ -189,7 +195,11 @@ func TestIsOGMetaTag(t *testing.T) {
 
 func TestExtractMetaTagInfo(t *testing.T) {
 	// Use a cache instance that reflects the default approved lists
-	testCache := NewOGTagCache("", false, time.Minute, false)
+	testCache := NewOGTagCache("", config.OpenGraph{
+		Enabled:      false,
+		ConsiderHost: false,
+		TimeToLive:   time.Minute,
+	}, memory.New(t.Context()))
 	testCache.approvedTags = []string{"description"}
 	testCache.approvedPrefixes = []string{"og:"}
 

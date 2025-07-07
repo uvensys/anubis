@@ -15,6 +15,7 @@ import (
 	"github.com/TecharoHQ/anubis"
 	"github.com/TecharoHQ/anubis/data"
 	"github.com/TecharoHQ/anubis/internal"
+	"github.com/TecharoHQ/anubis/internal/thoth/thothmock"
 	"github.com/TecharoHQ/anubis/lib/policy"
 	"github.com/TecharoHQ/anubis/lib/policy/config"
 )
@@ -23,10 +24,16 @@ func init() {
 	internal.InitSlog("debug")
 }
 
-func loadPolicies(t *testing.T, fname string) *policy.ParsedConfig {
+func loadPolicies(t *testing.T, fname string, difficulty int) *policy.ParsedConfig {
 	t.Helper()
 
-	anubisPolicy, err := LoadPoliciesOrDefault(fname, anubis.DefaultDifficulty)
+	ctx := thothmock.WithMockThoth(t)
+
+	if fname == "" {
+		fname = "./testdata/test_config.yaml"
+	}
+
+	anubisPolicy, err := LoadPoliciesOrDefault(ctx, fname, difficulty)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,6 +44,10 @@ func loadPolicies(t *testing.T, fname string) *policy.ParsedConfig {
 func spawnAnubis(t *testing.T, opts Options) *Server {
 	t.Helper()
 
+	if opts.Policy == nil {
+		opts.Policy = loadPolicies(t, "", 4)
+	}
+
 	s, err := New(opts)
 	if err != nil {
 		t.Fatalf("can't construct libanubis.Server: %v", err)
@@ -45,11 +56,11 @@ func spawnAnubis(t *testing.T, opts Options) *Server {
 	return s
 }
 
-type challenge struct {
+type challengeResp struct {
 	Challenge string `json:"challenge"`
 }
 
-func makeChallenge(t *testing.T, ts *httptest.Server, cli *http.Client) challenge {
+func makeChallenge(t *testing.T, ts *httptest.Server, cli *http.Client) challengeResp {
 	t.Helper()
 
 	req, err := http.NewRequest(http.MethodPost, ts.URL+"/.within.website/x/cmd/anubis/api/make-challenge", nil)
@@ -67,7 +78,7 @@ func makeChallenge(t *testing.T, ts *httptest.Server, cli *http.Client) challeng
 	}
 	defer resp.Body.Close()
 
-	var chall challenge
+	var chall challengeResp
 	if err := json.NewDecoder(resp.Body).Decode(&chall); err != nil {
 		t.Fatalf("can't read challenge response body: %v", err)
 	}
@@ -75,7 +86,7 @@ func makeChallenge(t *testing.T, ts *httptest.Server, cli *http.Client) challeng
 	return chall
 }
 
-func handleChallengeZeroDifficulty(t *testing.T, ts *httptest.Server, cli *http.Client, chall challenge) *http.Response {
+func handleChallengeZeroDifficulty(t *testing.T, ts *httptest.Server, cli *http.Client, chall challengeResp) *http.Response {
 	t.Helper()
 
 	nonce := 0
@@ -164,7 +175,7 @@ func TestLoadPolicies(t *testing.T) {
 			}
 			defer fin.Close()
 
-			if _, err := policy.ParseConfig(fin, fname, 4); err != nil {
+			if _, err := policy.ParseConfig(t.Context(), fin, fname, 4); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -173,14 +184,11 @@ func TestLoadPolicies(t *testing.T) {
 
 // Regression test for CVE-2025-24369
 func TestCVE2025_24369(t *testing.T) {
-	pol := loadPolicies(t, "")
-	pol.DefaultDifficulty = 4
+	pol := loadPolicies(t, "", anubis.DefaultDifficulty)
 
 	srv := spawnAnubis(t, Options{
 		Next:   http.NewServeMux(),
 		Policy: pol,
-
-		CookieName: t.Name(),
 	})
 
 	ts := httptest.NewServer(internal.RemoteXRealIP(true, "tcp", srv))
@@ -197,8 +205,7 @@ func TestCVE2025_24369(t *testing.T) {
 }
 
 func TestCookieCustomExpiration(t *testing.T) {
-	pol := loadPolicies(t, "")
-	pol.DefaultDifficulty = 0
+	pol := loadPolicies(t, "", 0)
 	ckieExpiration := 10 * time.Minute
 
 	srv := spawnAnubis(t, Options{
@@ -226,13 +233,13 @@ func TestCookieCustomExpiration(t *testing.T) {
 	var ckie *http.Cookie
 	for _, cookie := range resp.Cookies() {
 		t.Logf("%#v", cookie)
-		if cookie.Name == srv.cookieName {
+		if cookie.Name == anubis.CookieName {
 			ckie = cookie
 			break
 		}
 	}
 	if ckie == nil {
-		t.Errorf("Cookie %q not found", srv.cookieName)
+		t.Errorf("Cookie %q not found", anubis.CookieName)
 		return
 	}
 
@@ -247,8 +254,7 @@ func TestCookieCustomExpiration(t *testing.T) {
 }
 
 func TestCookieSettings(t *testing.T) {
-	pol := loadPolicies(t, "")
-	pol.DefaultDifficulty = 0
+	pol := loadPolicies(t, "", 0)
 
 	srv := spawnAnubis(t, Options{
 		Next:   http.NewServeMux(),
@@ -256,7 +262,7 @@ func TestCookieSettings(t *testing.T) {
 
 		CookieDomain:      "127.0.0.1",
 		CookiePartitioned: true,
-		CookieName:        t.Name(),
+		CookieSecure:      true,
 		CookieExpiration:  anubis.CookieDefaultExpirationTime,
 	})
 
@@ -278,13 +284,13 @@ func TestCookieSettings(t *testing.T) {
 	var ckie *http.Cookie
 	for _, cookie := range resp.Cookies() {
 		t.Logf("%#v", cookie)
-		if cookie.Name == srv.cookieName {
+		if cookie.Name == anubis.CookieName {
 			ckie = cookie
 			break
 		}
 	}
 	if ckie == nil {
-		t.Errorf("Cookie %q not found", srv.cookieName)
+		t.Errorf("Cookie %q not found", anubis.CookieName)
 		return
 	}
 
@@ -304,6 +310,10 @@ func TestCookieSettings(t *testing.T) {
 	if ckie.Partitioned != srv.opts.CookiePartitioned {
 		t.Errorf("wanted partitioned flag %v, got: %v", srv.opts.CookiePartitioned, ckie.Partitioned)
 	}
+
+	if ckie.Secure != srv.opts.CookieSecure {
+		t.Errorf("wanted secure flag %v, got: %v", srv.opts.CookieSecure, ckie.Secure)
+	}
 }
 
 func TestCheckDefaultDifficultyMatchesPolicy(t *testing.T) {
@@ -313,10 +323,7 @@ func TestCheckDefaultDifficultyMatchesPolicy(t *testing.T) {
 
 	for i := 1; i < 10; i++ {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			anubisPolicy, err := LoadPoliciesOrDefault("", i)
-			if err != nil {
-				t.Fatal(err)
-			}
+			anubisPolicy := loadPolicies(t, "", i)
 
 			s, err := New(Options{
 				Next:           h,
@@ -334,10 +341,12 @@ func TestCheckDefaultDifficultyMatchesPolicy(t *testing.T) {
 
 			req.Header.Add("X-Real-Ip", "127.0.0.1")
 
-			_, bot, err := s.check(req)
+			cr, bot, err := s.check(req)
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			t.Log(cr.Name)
 
 			if bot.Challenge.Difficulty != i {
 				t.Errorf("Challenge.Difficulty is wrong, wanted %d, got: %d", i, bot.Challenge.Difficulty)
@@ -386,8 +395,7 @@ func TestBasePrefix(t *testing.T) {
 			// Reset the global BasePrefix before each test
 			anubis.BasePrefix = ""
 
-			pol := loadPolicies(t, "")
-			pol.DefaultDifficulty = 4
+			pol := loadPolicies(t, "", 4)
 
 			srv := spawnAnubis(t, Options{
 				Next:       h,
@@ -420,7 +428,7 @@ func TestBasePrefix(t *testing.T) {
 				t.Errorf("expected status code %d, got: %d", http.StatusOK, resp.StatusCode)
 			}
 
-			var chall challenge
+			var chall challengeResp
 			if err := json.NewDecoder(resp.Body).Decode(&chall); err != nil {
 				t.Fatalf("can't read challenge response body: %v", err)
 			}
@@ -515,8 +523,7 @@ func TestCustomStatusCodes(t *testing.T) {
 		"DENY":      403,
 	}
 
-	pol := loadPolicies(t, "./testdata/aggressive_403.yaml")
-	pol.DefaultDifficulty = 4
+	pol := loadPolicies(t, "./testdata/aggressive_403.yaml", 4)
 
 	srv := spawnAnubis(t, Options{
 		Next:   h,
@@ -550,7 +557,7 @@ func TestCustomStatusCodes(t *testing.T) {
 func TestCloudflareWorkersRule(t *testing.T) {
 	for _, variant := range []string{"cel", "header"} {
 		t.Run(variant, func(t *testing.T) {
-			pol := loadPolicies(t, "./testdata/cloudflare-workers-"+variant+".yaml")
+			pol := loadPolicies(t, "./testdata/cloudflare-workers-"+variant+".yaml", 0)
 
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintln(w, "OK")
@@ -606,8 +613,7 @@ func TestCloudflareWorkersRule(t *testing.T) {
 }
 
 func TestRuleChange(t *testing.T) {
-	pol := loadPolicies(t, "testdata/rule_change.yaml")
-	pol.DefaultDifficulty = 0
+	pol := loadPolicies(t, "testdata/rule_change.yaml", 0)
 	ckieExpiration := 10 * time.Minute
 
 	srv := spawnAnubis(t, Options{
@@ -615,7 +621,6 @@ func TestRuleChange(t *testing.T) {
 		Policy: pol,
 
 		CookieDomain:     "127.0.0.1",
-		CookieName:       t.Name(),
 		CookieExpiration: ckieExpiration,
 	})
 
@@ -630,5 +635,104 @@ func TestRuleChange(t *testing.T) {
 	if resp.StatusCode != http.StatusFound {
 		resp.Write(os.Stderr)
 		t.Errorf("wanted %d, got: %d", http.StatusFound, resp.StatusCode)
+	}
+}
+
+func TestStripBasePrefixFromRequest(t *testing.T) {
+	testCases := []struct {
+		name            string
+		basePrefix      string
+		stripBasePrefix bool
+		requestPath     string
+		expectedPath    string
+	}{
+		{
+			name:            "strip disabled - no change",
+			basePrefix:      "/foo",
+			stripBasePrefix: false,
+			requestPath:     "/foo/bar",
+			expectedPath:    "/foo/bar",
+		},
+		{
+			name:            "strip enabled - removes prefix",
+			basePrefix:      "/foo",
+			stripBasePrefix: true,
+			requestPath:     "/foo/bar",
+			expectedPath:    "/bar",
+		},
+		{
+			name:            "strip enabled - root becomes slash",
+			basePrefix:      "/foo",
+			stripBasePrefix: true,
+			requestPath:     "/foo",
+			expectedPath:    "/",
+		},
+		{
+			name:            "strip enabled - trailing slash on base prefix",
+			basePrefix:      "/foo/",
+			stripBasePrefix: true,
+			requestPath:     "/foo/bar",
+			expectedPath:    "/bar",
+		},
+		{
+			name:            "strip enabled - no prefix match",
+			basePrefix:      "/foo",
+			stripBasePrefix: true,
+			requestPath:     "/other/bar",
+			expectedPath:    "/other/bar",
+		},
+		{
+			name:            "strip enabled - empty base prefix",
+			basePrefix:      "",
+			stripBasePrefix: true,
+			requestPath:     "/foo/bar",
+			expectedPath:    "/foo/bar",
+		},
+		{
+			name:            "strip enabled - nested path",
+			basePrefix:      "/app",
+			stripBasePrefix: true,
+			requestPath:     "/app/api/v1/users",
+			expectedPath:    "/api/v1/users",
+		},
+		{
+			name:            "strip enabled - exact match becomes root",
+			basePrefix:      "/myapp",
+			stripBasePrefix: true,
+			requestPath:     "/myapp/",
+			expectedPath:    "/",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := &Server{
+				opts: Options{
+					BasePrefix:      tc.basePrefix,
+					StripBasePrefix: tc.stripBasePrefix,
+				},
+			}
+
+			req := httptest.NewRequest(http.MethodGet, tc.requestPath, nil)
+			originalPath := req.URL.Path
+
+			result := srv.stripBasePrefixFromRequest(req)
+
+			if result.URL.Path != tc.expectedPath {
+				t.Errorf("expected path %q, got %q", tc.expectedPath, result.URL.Path)
+			}
+
+			// Ensure original request is not modified when no stripping should occur
+			if !tc.stripBasePrefix || tc.basePrefix == "" || !strings.HasPrefix(tc.requestPath, strings.TrimSuffix(tc.basePrefix, "/")) {
+				if result != req {
+					t.Error("expected same request object when no modification needed")
+				}
+			} else {
+				// Ensure original request is not modified when stripping occurs
+				if req.URL.Path != originalPath {
+					t.Error("original request was modified")
+				}
+			}
+		})
 	}
 }

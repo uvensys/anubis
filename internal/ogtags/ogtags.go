@@ -9,28 +9,35 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TecharoHQ/anubis/decaymap"
+	"github.com/TecharoHQ/anubis/lib/policy/config"
+	"github.com/TecharoHQ/anubis/lib/store"
 )
 
 const (
-	maxContentLength = 16 << 20        // 16 MiB in bytes, if there is a reasonable reason that you need more than this...Why?
+	maxContentLength = 8 << 20         // 8 MiB is enough for anyone
 	httpTimeout      = 5 * time.Second /*todo: make this configurable?*/
+
+	schemeSeparatorLength = 3 // Length of "://"
+	querySeparatorLength  = 1 // Length of "?" for query strings
 )
 
 type OGTagCache struct {
-	cache               *decaymap.Impl[string, map[string]string]
-	targetURL           *url.URL
-	client              *http.Client
+	cache     store.JSON[map[string]string]
+	targetURL *url.URL
+	client    *http.Client
+
+	// Pre-built strings for optimization
+	unixPrefix          string // "http://unix"
 	approvedTags        []string
 	approvedPrefixes    []string
 	ogTimeToLive        time.Duration
 	ogCacheConsiderHost bool
 	ogPassthrough       bool
+	ogOverride          map[string]string
 }
 
-func NewOGTagCache(target string, ogPassthrough bool, ogTimeToLive time.Duration, ogTagsConsiderHost bool) *OGTagCache {
+func NewOGTagCache(target string, conf config.OpenGraph, backend store.Interface) *OGTagCache {
 	// Predefined approved tags and prefixes
-	// In the future, these could come from configuration
 	defaultApprovedTags := []string{"description", "keywords", "author"}
 	defaultApprovedPrefixes := []string{"og:", "twitter:", "fediverse:"}
 
@@ -70,42 +77,53 @@ func NewOGTagCache(target string, ogPassthrough bool, ogTimeToLive time.Duration
 	}
 
 	return &OGTagCache{
-		cache:               decaymap.New[string, map[string]string](),
-		targetURL:           parsedTargetURL, // Store the parsed URL
-		ogPassthrough:       ogPassthrough,
-		ogTimeToLive:        ogTimeToLive,
-		ogCacheConsiderHost: ogTagsConsiderHost, // todo: refactor to be a separate struct
+		cache: store.JSON[map[string]string]{
+			Underlying: backend,
+			Prefix:     "ogtags:",
+		},
+		targetURL:           parsedTargetURL,
+		ogPassthrough:       conf.Enabled,
+		ogTimeToLive:        conf.TimeToLive,
+		ogCacheConsiderHost: conf.ConsiderHost,
+		ogOverride:          conf.Override,
 		approvedTags:        defaultApprovedTags,
 		approvedPrefixes:    defaultApprovedPrefixes,
 		client:              client,
+		unixPrefix:          "http://unix",
 	}
 }
 
 // getTarget constructs the target URL string for fetching OG tags.
-// For Unix sockets, it creates a "fake" HTTP URL that the custom dialer understands.
+// Optimized to minimize allocations by building strings directly.
 func (c *OGTagCache) getTarget(u *url.URL) string {
+	var escapedPath = u.EscapedPath() // will cause an allocation if path contains special characters
 	if c.targetURL.Scheme == "unix" {
-		// The custom dialer ignores the host, but we need a valid http URL structure.
-		// Use "unix" as a placeholder host. Path and Query from original request are appended.
-		fakeURL := &url.URL{
-			Scheme:   "http", // Scheme must be http/https for client.Get
-			Host:     "unix", // Arbitrary host, ignored by custom dialer
-			Path:     u.Path,
-			RawQuery: u.RawQuery,
+		// Build URL string directly without creating intermediate URL object
+		var sb strings.Builder
+		sb.Grow(len(c.unixPrefix) + len(escapedPath) + len(u.RawQuery) + querySeparatorLength) // Pre-allocate
+		sb.WriteString(c.unixPrefix)
+		sb.WriteString(escapedPath)
+		if u.RawQuery != "" {
+			sb.WriteByte('?')
+			sb.WriteString(u.RawQuery)
 		}
-		return fakeURL.String()
+		return sb.String()
 	}
 
-	// For regular http/https targets
-	target := *c.targetURL // Make a copy
-	target.Path = u.Path
-	target.RawQuery = u.RawQuery
-	return target.String()
+	// For regular http/https targets, build URL string directly
+	var sb strings.Builder
+	// Pre-calculate size: scheme + "://" + host + path + "?" + query
+	estimatedSize := len(c.targetURL.Scheme) + schemeSeparatorLength + len(c.targetURL.Host) + len(escapedPath) + len(u.RawQuery) + querySeparatorLength
+	sb.Grow(estimatedSize)
 
-}
-
-func (c *OGTagCache) Cleanup() {
-	if c.cache != nil {
-		c.cache.Cleanup()
+	sb.WriteString(c.targetURL.Scheme)
+	sb.WriteString("://")
+	sb.WriteString(c.targetURL.Host)
+	sb.WriteString(escapedPath)
+	if u.RawQuery != "" {
+		sb.WriteByte('?')
+		sb.WriteString(u.RawQuery)
 	}
+
+	return sb.String()
 }

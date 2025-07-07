@@ -1,14 +1,21 @@
 package policy
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"sync/atomic"
 
+	"github.com/TecharoHQ/anubis/internal/thoth"
+	"github.com/TecharoHQ/anubis/lib/policy/checker"
+	"github.com/TecharoHQ/anubis/lib/policy/config"
+	"github.com/TecharoHQ/anubis/lib/store"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	"github.com/TecharoHQ/anubis/lib/policy/config"
+	_ "github.com/TecharoHQ/anubis/lib/store/all"
 )
 
 var (
@@ -16,25 +23,33 @@ var (
 		Name: "anubis_policy_results",
 		Help: "The results of each policy rule",
 	}, []string{"rule", "action"})
+
+	ErrChallengeRuleHasWrongAlgorithm = errors.New("config.Bot.ChallengeRules: algorithm is invalid")
+	warnedAboutThresholds             = &atomic.Bool{}
 )
 
 type ParsedConfig struct {
 	orig *config.Config
 
 	Bots              []Bot
+	Thresholds        []*Threshold
 	DNSBL             bool
+	Impressum         *config.Impressum
+	OpenGraph         config.OpenGraph
 	DefaultDifficulty int
 	StatusCodes       config.StatusCodes
+	Store             store.Interface
 }
 
-func NewParsedConfig(orig *config.Config) *ParsedConfig {
+func newParsedConfig(orig *config.Config) *ParsedConfig {
 	return &ParsedConfig{
 		orig:        orig,
+		OpenGraph:   orig.OpenGraph,
 		StatusCodes: orig.StatusCodes,
 	}
 }
 
-func ParseConfig(fin io.Reader, fname string, defaultDifficulty int) (*ParsedConfig, error) {
+func ParseConfig(ctx context.Context, fin io.Reader, fname string, defaultDifficulty int) (*ParsedConfig, error) {
 	c, err := config.Load(fin, fname)
 	if err != nil {
 		return nil, err
@@ -42,7 +57,9 @@ func ParseConfig(fin io.Reader, fname string, defaultDifficulty int) (*ParsedCon
 
 	var validationErrs []error
 
-	result := NewParsedConfig(c)
+	tc, hasThothClient := thoth.FromContext(ctx)
+
+	result := newParsedConfig(c)
 	result.DefaultDifficulty = defaultDifficulty
 
 	for _, b := range c.Bots {
@@ -56,7 +73,7 @@ func ParseConfig(fin io.Reader, fname string, defaultDifficulty int) (*ParsedCon
 			Action: b.Action,
 		}
 
-		cl := CheckerList{}
+		cl := checker.List{}
 
 		if len(b.RemoteAddr) > 0 {
 			c, err := NewRemoteAddrChecker(b.RemoteAddr)
@@ -103,22 +120,79 @@ func ParseConfig(fin io.Reader, fname string, defaultDifficulty int) (*ParsedCon
 			}
 		}
 
+		if b.ASNs != nil {
+			if !hasThothClient {
+				slog.Warn("You have specified a Thoth specific check but you have no Thoth client configured. Please read https://anubis.techaro.lol/docs/admin/thoth for more information", "check", "asn", "settings", b.ASNs)
+				continue
+			}
+
+			cl = append(cl, tc.ASNCheckerFor(b.ASNs.Match))
+		}
+
+		if b.GeoIP != nil {
+			if !hasThothClient {
+				slog.Warn("You have specified a Thoth specific check but you have no Thoth client configured. Please read https://anubis.techaro.lol/docs/admin/thoth for more information", "check", "geoip", "settings", b.GeoIP)
+				continue
+			}
+
+			cl = append(cl, tc.GeoIPCheckerFor(b.GeoIP.Countries))
+		}
+
 		if b.Challenge == nil {
 			parsedBot.Challenge = &config.ChallengeRules{
 				Difficulty: defaultDifficulty,
 				ReportAs:   defaultDifficulty,
-				Algorithm:  config.AlgorithmFast,
+				Algorithm:  "fast",
 			}
 		} else {
 			parsedBot.Challenge = b.Challenge
-			if parsedBot.Challenge.Algorithm == config.AlgorithmUnknown {
-				parsedBot.Challenge.Algorithm = config.AlgorithmFast
+			if parsedBot.Challenge.Algorithm == "" {
+				parsedBot.Challenge.Algorithm = config.DefaultAlgorithm
 			}
 		}
+
+		if b.Weight != nil {
+			parsedBot.Weight = b.Weight
+		}
+
+		result.Impressum = c.Impressum
 
 		parsedBot.Rules = cl
 
 		result.Bots = append(result.Bots, parsedBot)
+	}
+
+	for _, t := range c.Thresholds {
+		if t.Name == "legacy-anubis-behaviour" && t.Expression.String() == "true" {
+			if !warnedAboutThresholds.Load() {
+				slog.Warn("configuration file does not contain thresholds, see docs for details on how to upgrade", "fname", fname, "docs_url", "https://anubis.techaro.lol/docs/admin/configuration/thresholds/")
+				warnedAboutThresholds.Store(true)
+			}
+
+			t.Challenge.Difficulty = defaultDifficulty
+			t.Challenge.ReportAs = defaultDifficulty
+		}
+
+		threshold, err := ParsedThresholdFromConfig(t)
+		if err != nil {
+			validationErrs = append(validationErrs, fmt.Errorf("can't compile threshold config for %s: %w", t.Name, err))
+			continue
+		}
+
+		result.Thresholds = append(result.Thresholds, threshold)
+	}
+
+	stFac, ok := store.Get(c.Store.Backend)
+	switch ok {
+	case true:
+		store, err := stFac.Build(ctx, c.Store.Parameters)
+		if err != nil {
+			validationErrs = append(validationErrs, err)
+		} else {
+			result.Store = store
+		}
+	case false:
+		validationErrs = append(validationErrs, config.ErrUnknownStoreBackend)
 	}
 
 	if len(validationErrs) > 0 {

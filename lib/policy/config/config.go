@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/TecharoHQ/anubis/data"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -39,26 +40,35 @@ const (
 	RuleAllow     Rule = "ALLOW"
 	RuleDeny      Rule = "DENY"
 	RuleChallenge Rule = "CHALLENGE"
+	RuleWeigh     Rule = "WEIGH"
 	RuleBenchmark Rule = "DEBUG_BENCHMARK"
 )
 
-type Algorithm string
+func (r Rule) Valid() error {
+	switch r {
+	case RuleAllow, RuleDeny, RuleChallenge, RuleWeigh, RuleBenchmark:
+		return nil
+	default:
+		return ErrUnknownAction
+	}
+}
 
-const (
-	AlgorithmUnknown Algorithm = ""
-	AlgorithmFast    Algorithm = "fast"
-	AlgorithmSlow    Algorithm = "slow"
-)
+const DefaultAlgorithm = "fast"
 
 type BotConfig struct {
-	UserAgentRegex *string           `json:"user_agent_regex"`
-	PathRegex      *string           `json:"path_regex"`
-	HeadersRegex   map[string]string `json:"headers_regex"`
-	Expression     *ExpressionOrList `json:"expression"`
-	Challenge      *ChallengeRules   `json:"challenge,omitempty"`
-	Name           string            `json:"name"`
-	Action         Rule              `json:"action"`
-	RemoteAddr     []string          `json:"remote_addresses"`
+	UserAgentRegex *string           `json:"user_agent_regex,omitempty" yaml:"user_agent_regex,omitempty"`
+	PathRegex      *string           `json:"path_regex,omitempty" yaml:"path_regex,omitempty"`
+	HeadersRegex   map[string]string `json:"headers_regex,omitempty" yaml:"headers_regex,omitempty"`
+	Expression     *ExpressionOrList `json:"expression,omitempty" yaml:"expression,omitempty"`
+	Challenge      *ChallengeRules   `json:"challenge,omitempty" yaml:"challenge,omitempty"`
+	Weight         *Weight           `json:"weight,omitempty" yaml:"weight,omitempty"`
+	Name           string            `json:"name" yaml:"name"`
+	Action         Rule              `json:"action" yaml:"action"`
+	RemoteAddr     []string          `json:"remote_addresses,omitempty" yaml:"remote_addresses,omitempty"`
+
+	// Thoth features
+	GeoIP *GeoIP `json:"geoip,omitempty"`
+	ASNs  *ASNs  `json:"asns,omitempty"`
 }
 
 func (b BotConfig) Zero() bool {
@@ -70,6 +80,8 @@ func (b BotConfig) Zero() bool {
 		b.Action != "",
 		len(b.RemoteAddr) != 0,
 		b.Challenge != nil,
+		b.GeoIP != nil,
+		b.ASNs != nil,
 	} {
 		if cond {
 			return false
@@ -79,7 +91,7 @@ func (b BotConfig) Zero() bool {
 	return true
 }
 
-func (b BotConfig) Valid() error {
+func (b *BotConfig) Valid() error {
 	var errs []error
 
 	if b.Name == "" {
@@ -89,7 +101,9 @@ func (b BotConfig) Valid() error {
 	allFieldsEmpty := b.UserAgentRegex == nil &&
 		b.PathRegex == nil &&
 		len(b.RemoteAddr) == 0 &&
-		len(b.HeadersRegex) == 0
+		len(b.HeadersRegex) == 0 &&
+		b.ASNs == nil &&
+		b.GeoIP == nil
 
 	if allFieldsEmpty && b.Expression == nil {
 		errs = append(errs, ErrBotMustHaveUserAgentOrPath)
@@ -150,7 +164,7 @@ func (b BotConfig) Valid() error {
 	}
 
 	switch b.Action {
-	case RuleAllow, RuleBenchmark, RuleChallenge, RuleDeny:
+	case RuleAllow, RuleBenchmark, RuleChallenge, RuleDeny, RuleWeigh:
 		// okay
 	default:
 		errs = append(errs, fmt.Errorf("%w: %q", ErrUnknownAction, b.Action))
@@ -162,6 +176,10 @@ func (b BotConfig) Valid() error {
 		}
 	}
 
+	if b.Action == RuleWeigh && b.Weight == nil {
+		b.Weight = &Weight{Adjust: 5}
+	}
+
 	if len(errs) != 0 {
 		return fmt.Errorf("config: bot entry for %q is not valid:\n%w", b.Name, errors.Join(errs...))
 	}
@@ -170,19 +188,23 @@ func (b BotConfig) Valid() error {
 }
 
 type ChallengeRules struct {
-	Algorithm  Algorithm `json:"algorithm"`
-	Difficulty int       `json:"difficulty"`
-	ReportAs   int       `json:"report_as"`
+	Algorithm  string `json:"algorithm,omitempty" yaml:"algorithm,omitempty"`
+	Difficulty int    `json:"difficulty,omitempty" yaml:"difficulty,omitempty"`
+	ReportAs   int    `json:"report_as,omitempty" yaml:"report_as,omitempty"`
 }
 
 var (
-	ErrChallengeRuleHasWrongAlgorithm = errors.New("config.Bot.ChallengeRules: algorithm is invalid")
-	ErrChallengeDifficultyTooLow      = errors.New("config.Bot.ChallengeRules: difficulty is too low (must be >= 1)")
-	ErrChallengeDifficultyTooHigh     = errors.New("config.Bot.ChallengeRules: difficulty is too high (must be <= 64)")
+	ErrChallengeDifficultyTooLow  = errors.New("config.ChallengeRules: difficulty is too low (must be >= 1)")
+	ErrChallengeDifficultyTooHigh = errors.New("config.ChallengeRules: difficulty is too high (must be <= 64)")
+	ErrChallengeMustHaveAlgorithm = errors.New("config.ChallengeRules: must have algorithm name set")
 )
 
 func (cr ChallengeRules) Valid() error {
 	var errs []error
+
+	if cr.Algorithm == "" {
+		errs = append(errs, ErrChallengeMustHaveAlgorithm)
+	}
 
 	if cr.Difficulty < 1 {
 		errs = append(errs, fmt.Errorf("%w, got: %d", ErrChallengeDifficultyTooLow, cr.Difficulty))
@@ -190,13 +212,6 @@ func (cr ChallengeRules) Valid() error {
 
 	if cr.Difficulty > 64 {
 		errs = append(errs, fmt.Errorf("%w, got: %d", ErrChallengeDifficultyTooHigh, cr.Difficulty))
-	}
-
-	switch cr.Algorithm {
-	case AlgorithmFast, AlgorithmSlow, AlgorithmUnknown:
-		// do nothing, it's all good
-	default:
-		errs = append(errs, fmt.Errorf("%w: %q", ErrChallengeRuleHasWrongAlgorithm, cr.Algorithm))
 	}
 
 	if len(errs) != 0 {
@@ -309,26 +324,48 @@ func (sc StatusCodes) Valid() error {
 }
 
 type fileConfig struct {
-	Bots        []BotOrImport `json:"bots"`
-	DNSBL       bool          `json:"dnsbl"`
-	StatusCodes StatusCodes   `json:"status_codes"`
+	Bots        []BotOrImport       `json:"bots"`
+	DNSBL       bool                `json:"dnsbl"`
+	OpenGraph   openGraphFileConfig `json:"openGraph,omitempty"`
+	Impressum   *Impressum          `json:"impressum,omitempty"`
+	StatusCodes StatusCodes         `json:"status_codes"`
+	Store       *Store              `json:"store"`
+	Thresholds  []Threshold         `json:"thresholds"`
 }
 
-func (c fileConfig) Valid() error {
+func (c *fileConfig) Valid() error {
 	var errs []error
 
 	if len(c.Bots) == 0 {
 		errs = append(errs, ErrNoBotRulesDefined)
 	}
 
-	for _, b := range c.Bots {
+	for i, b := range c.Bots {
 		if err := b.Valid(); err != nil {
+			errs = append(errs, fmt.Errorf("bot %d: %w", i, err))
+		}
+	}
+
+	if c.OpenGraph.Enabled {
+		if err := c.OpenGraph.Valid(); err != nil {
 			errs = append(errs, err)
 		}
 	}
 
 	if err := c.StatusCodes.Valid(); err != nil {
 		errs = append(errs, err)
+	}
+
+	for i, t := range c.Thresholds {
+		if err := t.Valid(); err != nil {
+			errs = append(errs, fmt.Errorf("threshold %d: %w", i, err))
+		}
+	}
+
+	if c.Store != nil {
+		if err := c.Store.Valid(); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	if len(errs) != 0 {
@@ -339,11 +376,16 @@ func (c fileConfig) Valid() error {
 }
 
 func Load(fin io.Reader, fname string) (*Config, error) {
-	var c fileConfig
-	c.StatusCodes = StatusCodes{
-		Challenge: http.StatusOK,
-		Deny:      http.StatusOK,
+	c := &fileConfig{
+		StatusCodes: StatusCodes{
+			Challenge: http.StatusOK,
+			Deny:      http.StatusOK,
+		},
+		Store: &Store{
+			Backend: "memory",
+		},
 	}
+
 	if err := yaml.NewYAMLToJSONDecoder(fin).Decode(&c); err != nil {
 		return nil, fmt.Errorf("can't parse policy config YAML %s: %w", fname, err)
 	}
@@ -353,8 +395,20 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 	}
 
 	result := &Config{
-		DNSBL:       c.DNSBL,
+		DNSBL: c.DNSBL,
+		OpenGraph: OpenGraph{
+			Enabled:      c.OpenGraph.Enabled,
+			ConsiderHost: c.OpenGraph.ConsiderHost,
+			Override:     c.OpenGraph.Override,
+		},
 		StatusCodes: c.StatusCodes,
+		Store:       c.Store,
+	}
+
+	if c.OpenGraph.TimeToLive != "" {
+		// XXX(Xe): already validated in Valid()
+		ogTTL, _ := time.ParseDuration(c.OpenGraph.TimeToLive)
+		result.OpenGraph.TimeToLive = ogTTL
 	}
 
 	var validationErrs []error
@@ -379,6 +433,27 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 		}
 	}
 
+	if c.Impressum != nil {
+		if err := c.Impressum.Valid(); err != nil {
+			validationErrs = append(validationErrs, err)
+		}
+
+		result.Impressum = c.Impressum
+	}
+
+	if len(c.Thresholds) == 0 {
+		c.Thresholds = DefaultThresholds
+	}
+
+	for _, t := range c.Thresholds {
+		if err := t.Valid(); err != nil {
+			validationErrs = append(validationErrs, err)
+			continue
+		}
+
+		result.Thresholds = append(result.Thresholds, t)
+	}
+
 	if len(validationErrs) > 0 {
 		return nil, fmt.Errorf("errors validating policy config %s: %w", fname, errors.Join(validationErrs...))
 	}
@@ -388,8 +463,12 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 
 type Config struct {
 	Bots        []BotConfig
+	Thresholds  []Threshold
 	DNSBL       bool
+	Impressum   *Impressum
+	OpenGraph   OpenGraph
 	StatusCodes StatusCodes
+	Store       *Store
 }
 
 func (c Config) Valid() error {

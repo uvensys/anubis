@@ -40,13 +40,31 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - https://openwrt.org/
 - https://minihoot.site
 - https://catgirl.click/
+- https://wiki.dolphin-emu.org/
+- https://squirreljme.cc/
+- https://gitlab.postmarketos.org/
+- https://wiki.koha-community.org/
+- https://extensions.typo3.org/
+- https://ebird.org/
+- https://fabulous.systems/
+- https://coinhoards.org/
+- https://pluralpedia.org/
+- https://git.aya.so/
+- https://marginalia-search.com/
 - <details>
   <summary>FreeCAD</summary>
   - https://forum.freecad.org/
   - https://wiki.freecad.org/
   </details>
 - <details>
+  <summary>ReactOS</summary>
+  - https://reactos.org/forum
+  - https://reactos.org/wiki
+  - https://git.reactos.org
+  </details>
+- <details>
   <summary>ScummVM</summary>
+  - https://bugs.scummvm.org/
   - https://forums.scummvm.org/
   - https://wiki.scummvm.org/
   </details>
@@ -62,4 +80,22 @@ This page contains a non-exhaustive list with all websites using Anubis.
 - <details>
   <summary>The United Nations</summary>
   - https://policytoolbox.iiep.unesco.org/
+  </details>
+- <details>
+  <summary>hebis (Alliance of Hessian Libraries)</summary>
+  - https://ubmr.hds.hebis.de/
+  - https://tufind.hds.hebis.de/
+  - https://karla.hds.hebis.de/
+  - and many more (see https://www.hebis.de/dienste/hebis-discovery-system/)
+  </details>
+- <details>
+  <summary>Duke University</summary>
+  - https://repository.duke.edu/
+  - https://archives.lib.duke.edu/
+  - https://find.library.duke.edu/
+  - https://nicholas.duke.edu/
+  </details>
+- <details>
+  <summary>Forschungszentrum Jülich</summary>
+  - https://juser.fz-juelich.de/
   </details>

@@ -34,27 +34,6 @@ These examples assume that you are using a setup where your nginx configuration 
 
 :::
 
-## Dependencies
-
-Install the following dependencies for proxying HTTP:
-
-<Tabs>
-  <TabItem value="rpm" label="Red Hat / RPM" default>
-
-```text
-dnf -y install mod_proxy_html
-```
-
-  </TabItem>
-  <TabItem value="deb" label="Debian / Ubuntu / apt">
-
-```text
-apt-get install -y libapache2-mod-proxy-html libxml2-dev
-```
-
-  </TabItem>
-</Tabs>
-
 ## Configuration
 
 Assuming you are protecting `anubistest.techaro.lol`, you need the following server configuration blocks:
@@ -92,6 +71,7 @@ Assuming you are protecting `anubistest.techaro.lol`, you need the following ser
        # throw an "admin misconfiguration" error.
        RequestHeader set "X-Real-Ip" expr=%{REMOTE_ADDR}
        RequestHeader set X-Forwarded-Proto "https"
+       RequestHeader set "X-Http-Version" "%{SERVER_PROTOCOL}s"
 
        ProxyPreserveHost On
 
@@ -115,6 +95,14 @@ Assuming you are protecting `anubistest.techaro.lol`, you need the following ser
 ```
 
 Make sure to add a separate configuration file for the listener on port 3001:
+
+```text
+# /etc/httpd/conf.d/listener-3001.conf
+
+Listen [::1]:3001
+```
+
+In case you are running an IPv4-only system, use the following configuration instead:
 
 ```text
 # /etc/httpd/conf.d/listener-3001.conf

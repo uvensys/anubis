@@ -1,4 +1,4 @@
-package config
+package config_test
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/TecharoHQ/anubis/data"
-	"k8s.io/apimachinery/pkg/util/yaml"
+	. "github.com/TecharoHQ/anubis/lib/policy/config"
 )
 
 func p[V any](v V) *V { return &v }
@@ -131,20 +131,6 @@ func TestBotValid(t *testing.T) {
 			err: ErrChallengeDifficultyTooHigh,
 		},
 		{
-			name: "challenge wrong algorithm",
-			bot: BotConfig{
-				Name:      "mozilla-ua",
-				Action:    RuleChallenge,
-				PathRegex: p("Mozilla"),
-				Challenge: &ChallengeRules{
-					Difficulty: 420,
-					ReportAs:   4,
-					Algorithm:  "high quality rips",
-				},
-			},
-			err: ErrChallengeRuleHasWrongAlgorithm,
-		},
-		{
 			name: "invalid cidr range",
 			bot: BotConfig{
 				Name:       "mozilla-ua",
@@ -181,6 +167,25 @@ func TestBotValid(t *testing.T) {
 				RemoteAddr: []string{"0.0.0.0/0"},
 			},
 			err: nil,
+		},
+		{
+			name: "weight rule without weight",
+			bot: BotConfig{
+				Name:           "weight-adjust-if-mozilla",
+				Action:         RuleWeigh,
+				UserAgentRegex: p("Mozilla"),
+			},
+		},
+		{
+			name: "weight rule with weight adjust",
+			bot: BotConfig{
+				Name:           "weight-adjust-if-mozilla",
+				Action:         RuleWeigh,
+				UserAgentRegex: p("Mozilla"),
+				Weight: &Weight{
+					Adjust: 5,
+				},
+			},
 		},
 	}
 
@@ -308,12 +313,8 @@ func TestConfigValidBad(t *testing.T) {
 			}
 			defer fin.Close()
 
-			var c fileConfig
-			if err := yaml.NewYAMLToJSONDecoder(fin).Decode(&c); err != nil {
-				t.Fatalf("can't decode file: %v", err)
-			}
-
-			if err := c.Valid(); err == nil {
+			_, err = Load(fin, filepath.Join("testdata", "bad", st.Name()))
+			if err == nil {
 				t.Fatal("validation should have failed but didn't somehow")
 			} else {
 				t.Log(err)
@@ -325,45 +326,45 @@ func TestConfigValidBad(t *testing.T) {
 func TestBotConfigZero(t *testing.T) {
 	var b BotConfig
 	if !b.Zero() {
-		t.Error("zero value BotConfig is not zero value")
+		t.Error("zero value config.BotConfig is not zero value")
 	}
 
 	b.Name = "hi"
 	if b.Zero() {
-		t.Error("BotConfig with name is zero value")
+		t.Error("config.BotConfig with name is zero value")
 	}
 
 	b.UserAgentRegex = p(".*")
 	if b.Zero() {
-		t.Error("BotConfig with user agent regex is zero value")
+		t.Error("config.BotConfig with user agent regex is zero value")
 	}
 
 	b.PathRegex = p(".*")
 	if b.Zero() {
-		t.Error("BotConfig with path regex is zero value")
+		t.Error("config.BotConfig with path regex is zero value")
 	}
 
 	b.HeadersRegex = map[string]string{"hi": "there"}
 	if b.Zero() {
-		t.Error("BotConfig with headers regex is zero value")
+		t.Error("config.BotConfig with headers regex is zero value")
 	}
 
 	b.Action = RuleAllow
 	if b.Zero() {
-		t.Error("BotConfig with action is zero value")
+		t.Error("config.BotConfig with action is zero value")
 	}
 
 	b.RemoteAddr = []string{"::/0"}
 	if b.Zero() {
-		t.Error("BotConfig with remote addresses is zero value")
+		t.Error("config.BotConfig with remote addresses is zero value")
 	}
 
 	b.Challenge = &ChallengeRules{
 		Difficulty: 4,
 		ReportAs:   4,
-		Algorithm:  AlgorithmFast,
+		Algorithm:  DefaultAlgorithm,
 	}
 	if b.Zero() {
-		t.Error("BotConfig with challenge rules is zero value")
+		t.Error("config.BotConfig with challenge rules is zero value")
 	}
 }
