@@ -6,9 +6,15 @@ import (
 	"github.com/TecharoHQ/anubis/lib/localization"
 	"github.com/TecharoHQ/anubis/lib/policy/config"
 	"github.com/TecharoHQ/anubis/xess"
+	"os"
 )
 
+<<<<<<< HEAD
 templ base(title string, body templ.Component, impressum *config.Impressum, challenge any, ogTags map[string]string, localizer *localization.SimpleLocalizer) {
+=======
+templ base(title string, body templ.Component, challenge any, ogTags map[string]string) {
+	{{ company_foot := Company() }}
+>>>>>>> main
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -67,8 +73,15 @@ templ base(title string, body templ.Component, impressum *config.Impressum, chal
 			<main>
 				<center>
 					<h1 id="title" class=".centered-div">{ title }</h1>
+					<h2 id="title" class=".centered-div">Service Managed by  {{ company := os.Getenv("COMPANY")}} 
+						<strong id="company">
+							{company}
+						</strong>
+					</h2>
 				</center>
 				@body
+				
+				@company_foot
 				<footer>
 					<center>
 						<p>
@@ -90,11 +103,12 @@ templ base(title string, body templ.Component, impressum *config.Impressum, chal
 	</html>
 }
 
-templ index(localizer *localization.SimpleLocalizer) {
+templ index() {
+	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
-		<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version }/>
-		<img style="display:none;" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" + anubis.Version }/>
-		<p id="status">{ localizer.T("loading") }</p>
+		<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
+		<img style="display:none;" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/happy_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
+		<p id="status">Loading...</p>
 		<script async type="module" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/main.mjs?cacheBuster=" + anubis.Version }></script>
 		<div id="progress" role="progressbar" aria-labelledby="status">
 			<div class="bar-inner"></div>
@@ -124,9 +138,10 @@ templ index(localizer *localization.SimpleLocalizer) {
 	</div>
 }
 
-templ errorPage(message string, mail string, localizer *localization.SimpleLocalizer) {
+templ errorPage(message string, mail string) {
+	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
-		<img id="image" alt="Sad Anubis" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject.webp?cacheBuster=" + anubis.Version }/>
+		<img id="image" alt="Sad Anubis" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
 		<p>{ message }.</p>
 		<button onClick="window.location.reload();">{ localizer.T("try_again") }</button>
 		if mail != "" {
@@ -142,19 +157,22 @@ templ errorPage(message string, mail string, localizer *localization.SimpleLocal
 	</div>
 }
 
-templ StaticHappy(localizer *localization.SimpleLocalizer) {
-	<div class="centered-div">
-		<img
-			style="display:none;"
-			style="width:100%;max-width:256px;"
-			src={ "/.within.website/x/cmd/anubis/static/img/happy.webp?cacheBuster=" +
+templ StaticHappy() {
+
+	{{ company := os.Getenv("COMPANY") }}
+<div class="centered-div">
+    <img
+            style="display:none;"
+            style="width:100%;max-width:256px;"
+            src={ "/.within.website/x/cmd/anubis/static/img/happy_" +  company  + ".webp?cacheBuster=" +
     anubis.Version }
 		/>
 		<p>{ localizer.T("static_check_endpoint") }</p>
 	</div>
 }
 
-templ bench(localizer *localization.SimpleLocalizer) {
+templ bench() {
+	{{ company := os.Getenv("COMPANY") }}
 	<div style="height:20rem;display:flex">
 		<table style="margin-top:1rem;display:grid;grid-template:auto 1fr/auto auto;gap:0 0.5rem">
 			<thead
@@ -177,8 +195,8 @@ templ bench(localizer *localization.SimpleLocalizer) {
 			></tbody>
 		</table>
 		<div class="centered-div">
-			<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive.webp?cacheBuster=" + anubis.Version }/>
-			<p id="status" style="max-width:256px">{ localizer.T("loading") }</p>
+			<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
+			<p id="status" style="max-width:256px">Loading...</p>
 			<script async type="module" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/js/bench.mjs?cacheBuster=" + anubis.Version }></script>
 			<div id="sparkline"></div>
 			<noscript>
@@ -202,4 +220,15 @@ templ bench(localizer *localization.SimpleLocalizer) {
 			</select>
 		</div>
 	</form>
+}
+
+templ company() {
+	{{ company := os.Getenv("COMPANY")}} 
+	{{ file, err := Static.ReadFile("static/footer_"+ company +".html")}}
+	{{ print(err)}}
+	{{ content := string(file)}}
+	{{ print(content)}}
+	<div> 
+	@templ.Raw(content)
+	</div>
 }

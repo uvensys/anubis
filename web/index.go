@@ -32,3 +32,7 @@ func ErrorPage(msg string, mail string, localizer *localization.SimpleLocalizer)
 func Bench(localizer *localization.SimpleLocalizer) templ.Component {
 	return bench(localizer)
 }
+
+func Company() templ.Component {
+	return company()
+}

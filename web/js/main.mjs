@@ -5,7 +5,7 @@ const algorithms = {
   fast: processFast,
   slow: processSlow,
 };
-
+const company = document.getElementById('company').value;
 // from Xeact
 const u = (url = "", params = {}) => {
   let result = new URL(url, window.location.href);
@@ -14,9 +14,9 @@ const u = (url = "", params = {}) => {
 };
 
 const imageURL = (mood, cacheBuster, basePrefix) =>
-  u(`${basePrefix}/.within.website/x/cmd/anubis/static/img/${mood}.webp`, {
-    cacheBuster,
-  });
+
+  u(`${basePrefix}/.within.website/x/cmd/anubis/static/img/${mood}_${company}.webp`, { cacheBuster });
+
 
 // Detect available languages by loading the manifest
 const getAvailableLanguages = async () => {
