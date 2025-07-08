@@ -104,7 +104,7 @@ func main() {
 
 	sp := strings.SplitN(output, "@", 2)
 
-	setOutput("digest", sp[1])
+	setOutput("digest", sp[0])
 }
 
 type image struct {
