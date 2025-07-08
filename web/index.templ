@@ -102,7 +102,7 @@ templ base(title string, body templ.Component, impressum *config.Impressum, chal
 	</html>
 }
 
-templ index() {
+templ index(localizer *localization.SimpleLocalizer) {
 	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
 		<img id="image" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/pensive_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
@@ -137,7 +137,7 @@ templ index() {
 	</div>
 }
 
-templ errorPage(message string, mail string) {
+templ errorPage(message string, mail string, localizer *localization.SimpleLocalizer) {
 	{{ company := os.Getenv("COMPANY") }}
 	<div class="centered-div">
 		<img id="image" alt="Sad Anubis" style="width:100%;max-width:256px;" src={ anubis.BasePrefix + "/.within.website/x/cmd/anubis/static/img/reject_" +  company  + ".webp?cacheBuster=" + anubis.Version }/>
@@ -156,7 +156,7 @@ templ errorPage(message string, mail string) {
 	</div>
 }
 
-templ StaticHappy() {
+templ StaticHappy(localizer *localization.SimpleLocalizer) {
 
 	{{ company := os.Getenv("COMPANY") }}
 <div class="centered-div">
@@ -170,7 +170,7 @@ templ StaticHappy() {
 	</div>
 }
 
-templ bench() {
+templ bench(localizer *localization.SimpleLocalizer) {
 	{{ company := os.Getenv("COMPANY") }}
 	<div style="height:20rem;display:flex">
 		<table style="margin-top:1rem;display:grid;grid-template:auto 1fr/auto auto;gap:0 0.5rem">
