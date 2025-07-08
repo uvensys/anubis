@@ -9,12 +9,11 @@ import (
 	"os"
 )
 
-<<<<<<< HEAD
+
 templ base(title string, body templ.Component, impressum *config.Impressum, challenge any, ogTags map[string]string, localizer *localization.SimpleLocalizer) {
-=======
-templ base(title string, body templ.Component, challenge any, ogTags map[string]string) {
-	{{ company_foot := Company() }}
->>>>>>> main
+
+{{ company_foot := Company() }}
+
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
