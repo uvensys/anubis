@@ -58,7 +58,7 @@ jobs:
       - name: Log into registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
-          registry: ghcr.io
+          registry: ${{ secrets.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_EXTRA_USER }}
           password: ${{ secrets.DOKCER_EXTRA_PASSWORD }}
 
