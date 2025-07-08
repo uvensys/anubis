@@ -60,7 +60,7 @@ jobs:
         with:
           registry: ${{ secrets.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_EXTRA_USER }}
-          password: ${{ secrets.DOKCER_EXTRA_PASSWORD }}
+          password: ${{ secrets.DOCKER_EXTRA_PASSWORD }}
 
       - name: Docker meta
         id: meta
